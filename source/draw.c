@@ -181,6 +181,10 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
             vecTransform(cam->world2cam, vertsCamSpace + i); // And finally, we're in camera space.
         }
 
+        // Remember lightDir and attenuation (which don't depend on the faces) so we don't have to re-compute them redundantly in the inner faces loop.
+        Vec3 lightDir;
+        FIXED attenuation = -1;
+        bool lightDirAttenuationCalculated = false;
         for (int faceNum = 0; faceNum < instance.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
             const Face face = instance.mod.faces[faceNum];
              // Backface culling (assumes a clockwise winding order):
@@ -217,25 +221,37 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
             } else if (triVerts[0].y >= cam->canvasHeight && triVerts[1].y >= cam->canvasHeight && triVerts[2].y >= cam->canvasHeight) { // All vertices are to the bottom of the bottom-plane.
                 continue;
             }
-            
-            // Handle polygon shading options:
+
+            // Handle the face's shading options: 
+            if (!lightDirAttenuationCalculated) { // Only calculate once per model instance and not once per face.
+                lightDirAttenuationCalculated = true;
+                if (options->shading == SHADING_FLAT_LIGHTING) {
+                    if (options->lightPoint) {
+                        Vec3 dir = vecSub(*options->lightPoint, instance.pos);
+                        if (options->lightPointAttenuation) {
+                            FIXED d = vecMag(dir);
+                            attenuation = fxdiv(int2fx(1), int2fx(1) + (d >> 5) + (fxmul(d, d) >> 7) );
+                        }
+                        lightDir = vecUnit(dir);
+                    } else if (options->lightDirectional) {
+                        lightDir = vecSub((Vec3){0, 0, 0}, *options->lightDirectional); // Invert the sign.
+                    } else {
+                        panic("draw.c: drawModelInstaces: Missing lighting vectors.");
+                    }
+                }
+            }
             if (options->shading == SHADING_FLAT_LIGHTING) {
                 const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); // Rotate the face's normal (in model space).
-                Vec3 lightDir;
-                if (options->lightPoint) {
-                    lightDir = vecSub(vertsCamSpace[face.vertexIndex[1]], *options->lightPoint);
-                } else if (options->lightDirectional) {
-                    lightDir = *options->lightDirectional;
-                } else {
-                    panic("draw.c: drawModelInstaces: Missing lighting vectors.");
-                }
                 const FIXED lightAlpha = vecDot(lightDir, faceNormal);
                 if (lightAlpha > 0) {
                     COLOR shade = fx2int(fxmul(lightAlpha, int2fx(31)));
-                    shade = MAX(2, shade);
+                    if (attenuation != -1) {
+                        shade = fx2int(fxmul(attenuation, int2fx(shade)));
+                    }
+                    shade = MIN(MAX(1, shade), 31);
                     clippedTri.color = RGB15(shade, shade, shade);
                 } else {
-                    clippedTri.color = RGB15(2,2,2);
+                    clippedTri.color = RGB15(1,1,1);
                 } 
             } else if (options->shading == SHADING_FLAT) {
                 clippedTri.color = face.color;
@@ -259,7 +275,7 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
     performanceStart(perfFill); 
     drawFillTris(screenTriangles, screenTriangleCount);    
     performanceEnd(perfFill);
-    char txt[128];
-    sprintf(txt, "tris: %d", screenTriangleCount);
-    m5_puts(8, 80, txt, CLR_FUCHSIA);
+//     char txt[128];
+//     sprintf(txt, "tris: %d", screenTriangleCount);
+//     m5_puts(8, 80, txt, CLR_FUCHSIA);
 }

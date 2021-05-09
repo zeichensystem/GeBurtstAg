@@ -27,4 +27,6 @@ void mgba_printf(const char* fmt, ...);
 void assertion(bool cond, const char* name);
 void panic(const char* message);
 
+int getFps(void);
+
 #endif

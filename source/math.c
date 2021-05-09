@@ -104,6 +104,11 @@ Vec3 vecUnit(Vec3 a)
     return (Vec3){.x = fxdiv(a.x, mag), .y=fxdiv(a.y, mag), .z=fxdiv(a.z, mag) };
 }
 
+FIXED vecMag(Vec3 a) {
+     return Sqrt((fxmul(a.x, a.x) + fxmul(a.y, a.y) + fxmul(a.z, a.z)) << (FIX_SHIFT) ); // sqrt(2**8) * sqrt(2**8) = 2**8
+}
+
+
 Vec3 vecCross(Vec3 a, Vec3 b) 
 {
     Vec3 cross;

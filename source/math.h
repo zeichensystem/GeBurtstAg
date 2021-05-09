@@ -25,6 +25,8 @@ IWRAM_CODE Vec3 vecSub(Vec3 a, Vec3 b);
 IWRAM_CODE Vec3 vecCross(Vec3 a, Vec3 b);
 IWRAM_CODE FIXED vecDot(Vec3 a, Vec3 b);
 IWRAM_CODE Vec3 vecUnit(Vec3 a);
+IWRAM_CODE FIXED vecMag(Vec3 a);
+
 
 IWRAM_CODE Vec3 vecTransformed(const FIXED matrix[16], Vec3 vec);
 IWRAM_CODE void vecTransform(const FIXED matrix[16], Vec3 *vec);

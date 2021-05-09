@@ -17,6 +17,7 @@ typedef struct ModelDrawOptions {
     const COLOR wireframeColor;
     const Vec3 *lightDirectional;
     const Vec3 *lightPoint;
+    const bool lightPointAttenuation;
 } ModelDrawOptions;
 
 void drawInit();

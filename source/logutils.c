@@ -7,6 +7,7 @@
 #include "logutils.h"
 #include "draw.h"
 #include "globals.h"
+#include "timer.h"
 
 // mgba_log and mgba_printf by Nick Sells/adverseengineer: https://github.com/adverseengineer/libtonc/blob/master/src/tonc_mgba.c
 // (Modified by me.)
@@ -67,3 +68,14 @@ void assertion(bool cond, const char* name)
         panic(msg);
     }
 }
+
+
+static FIXED prevFps = 0;
+
+int getFps(void) {
+    const FIXED point_9 = 230; // smoothing
+    FIXED currentFps =  fx12Tofx(fx12div(int2fx12(1), g_timer.deltatime));
+    FIXED fps = fxmul(prevFps, point_9) + fxmul(currentFps, int2fx(1) - point_9);
+    prevFps = fps;
+    return fx2int(fps);
+} 

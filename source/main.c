@@ -43,13 +43,6 @@ int main(void)
     trackerInit();
     scenesInit();
     
-    int framesThisSecond = 0;
-    int fps = 1;
-    Timer fpsTimer = timerNew(int2fx12(1), TIMER_REGULAR);
-    Timer showPerfTimer = timerNew(int2fx12(2), TIMER_REGULAR);
-    timerStart(&showPerfTimer);
-    timerStart(&fpsTimer);
-    
     /* 
         Scaling using the affine background capabilities of the GBA. 
         We use Mode 5 (160x128) with an "internal/logical" resolution of 160x100 scaled to fit the 
@@ -68,33 +61,32 @@ int main(void)
     bg_rotscale_ex(&bgaff, &asx);
     REG_BG_AFFINE[2]= bgaff;
 
+    Timer showPerfTimer = timerNew(int2fx12(2), TIMER_REGULAR);
+    timerStart(&showPerfTimer);
+
     while (1) {
         key_poll();
         scenesDispatchUpdate();
         scenesDispatchDraw();
 
+        int fps = getFps();
         #ifdef SHOW_DEBUG
         char dbg[64];
         snprintf(dbg, sizeof(dbg),  "FPS: %d", fps);
         m5_puts(8, 8, dbg, CLR_LIME);
         #endif
+
         vid_flip();
 
         if (showPerfTimer.done) { // We don't want to print the performance data every frame, so we use a timer. 
             performancePrintAll();
             timerStart(&showPerfTimer);
         }
-        if (fpsTimer.done) {
-            fps = framesThisSecond;
-            framesThisSecond = 0;
-            timerStart(&fpsTimer);
-        }
+
         timerTick(&g_timer);
         timerTick(&showPerfTimer);
-        timerTick(&fpsTimer);
         performanceReset();
         ++g_frameCount;
-        ++framesThisSecond;
     }
     return 0; // For dust thou art, and unto dust shalt thou return.
 }

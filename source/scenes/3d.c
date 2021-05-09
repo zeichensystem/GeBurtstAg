@@ -27,12 +27,12 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 void scene3dInit(void) 
 {     
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(42)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(72.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(42)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(40.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
         perfSortID = performanceDataRegister("Polygon depth sort");
-        lightDirection = (Vec3){.x=int2fx(0), .y=int2fx(-4), .z=int2fx(-3)};
+        lightDirection = (Vec3){.x=int2fx(3), .y=int2fx(-4), .z=int2fx(-3)};
         lightDirection = vecUnit(lightDirection);
         
         int size = 8;
@@ -46,15 +46,14 @@ void scene3dUpdate(void)
 {
         timerTick(&timer);
 
-        // for (int i = 0; i < NUM_CUBES; ++i) {
-        //         FIXED_12 dir = i % 2 ? int2fx12(-1) : int2fx12(1);
-        //         cubes[i].yaw -= fx12mul(dir, fx12mul(timer.deltatime, deg2fxangle(80)) );
-        //         // cubes[i].yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
-        //         // cubes[i].pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
-        //         // cubes[i].roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
-        //         // cubes[i].pos.y = fxmul(sinFx(cubes[i].pos.x + cubes[i].pos.z +  fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
-        //         // cubes[i].scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
-        // }
+        for (int i = 0; i < NUM_CUBES; ++i) {
+                // FIXED_12 dir = i % 2 ? int2fx12(-1) : int2fx12(1);
+                // cubes[i].yaw -= fx12mul(dir, fx12mul(timer.deltatime, deg2fxangle(80)) );
+                // cubes[i].pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
+                // cubes[i].roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
+                // cubes[i].pos.y = fxmul(sinFx(cubes[i].pos.x + cubes[i].pos.z +  fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
+                // cubes[i].scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
+        }
 
         cubes[4].pos.y = fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
         cubes[4].yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
@@ -83,8 +82,8 @@ void scene3dUpdate(void)
 void scene3dDraw(void) 
 {
         drawBefore(&camera);
-        memset32(vid_page, dup16(CLR_CREAM), ((M5_SCALED_H-1) * M5_SCALED_W)/2);
-        const ModelDrawOptions opts = {.lightDirectional=&lightDirection, .lightPoint=NULL, .shading=SHADING_FLAT_LIGHTING, .wireframeColor=CLR_LIME};
+        memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-1) * M5_SCALED_W)/2);
+        const ModelDrawOptions opts = {.lightDirectional=NULL , .lightPoint=&camera.pos, .lightPointAttenuation=true, .shading=SHADING_FLAT_LIGHTING, .wireframeColor=CLR_LIME};
         drawModelInstances(&camera, cubes, NUM_CUBES, &opts);
 }
 
