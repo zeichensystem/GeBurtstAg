@@ -84,7 +84,8 @@ void scene3dDraw(void)
 {
         drawBefore(&camera);
         memset32(vid_page, dup16(CLR_CREAM), ((M5_SCALED_H-1) * M5_SCALED_W)/2);
-        drawModelInstances(&camera, cubes, NUM_CUBES, lightDirection);
+        const ModelDrawOptions opts = {.lightDirectional=&lightDirection, .lightPoint=NULL, .shading=SHADING_FLAT_LIGHTING, .wireframeColor=CLR_LIME};
+        drawModelInstances(&camera, cubes, NUM_CUBES, &opts);
 }
 
 

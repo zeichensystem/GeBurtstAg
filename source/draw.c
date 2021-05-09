@@ -150,7 +150,7 @@ static void drawWireframeTris(RasterTriangle *tri, int numTris)
 }
 
 
-void drawModelInstances(const Camera *cam, const ModelInstance *instances, int numInstances, Vec3 lightDir) 
+void drawModelInstances(const Camera *cam, const ModelInstance *instances, int numInstances, const ModelDrawOptions *options) 
 { 
     performanceStart(perfModelProcessing);
     int screenTriangleCount = 0;
@@ -217,17 +217,34 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
             } else if (triVerts[0].y >= cam->canvasHeight && triVerts[1].y >= cam->canvasHeight && triVerts[2].y >= cam->canvasHeight) { // All vertices are to the bottom of the bottom-plane.
                 continue;
             }
-            // Color/lighting:
-            const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); // Rotate the face's normal (in model space).
-            const FIXED lightAlpha = vecDot(lightDir, faceNormal);
-            if (lightAlpha > 0) {
-                COLOR shade = fx2int(fxmul(lightAlpha, int2fx(31)));
-                shade = MAX(2, shade);
-                clippedTri.color = RGB15(shade, shade, shade);
+            
+            // Handle polygon shading options:
+            if (options->shading == SHADING_FLAT_LIGHTING) {
+                const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); // Rotate the face's normal (in model space).
+                Vec3 lightDir;
+                if (options->lightPoint) {
+                    lightDir = vecSub(vertsCamSpace[face.vertexIndex[1]], *options->lightPoint);
+                } else if (options->lightDirectional) {
+                    lightDir = *options->lightDirectional;
+                } else {
+                    panic("draw.c: drawModelInstaces: Missing lighting vectors.");
+                }
+                const FIXED lightAlpha = vecDot(lightDir, faceNormal);
+                if (lightAlpha > 0) {
+                    COLOR shade = fx2int(fxmul(lightAlpha, int2fx(31)));
+                    shade = MAX(2, shade);
+                    clippedTri.color = RGB15(shade, shade, shade);
+                } else {
+                    clippedTri.color = RGB15(2,2,2);
+                } 
+            } else if (options->shading == SHADING_FLAT) {
+                clippedTri.color = face.color;
+            } else if (options->shading == SHADING_WIREFRAME) {
+                clippedTri.color = options->wireframeColor;
             } else {
-                clippedTri.color = RGB15(2,2,2);
-            }     
-
+                panic("draw.c: drawModelInstances: Unknown shading option.");
+            }
+    
             clippedTri.centroidZ = vertsCamSpace[face.vertexIndex[0]].z; // TODO HACK: That's not the actual centroid (we'd need an expensive division for that), but this is good enough for small faces.
             assertion(screenTriangleCount < DRAW_MAX_TRIANGLES, "draw.c: drawModelInstances: screenTriangleCount < DRAW_MAX_TRIANGLES");
             screenTriangles[screenTriangleCount++] = clippedTri;
