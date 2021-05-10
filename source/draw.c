@@ -7,6 +7,7 @@
 #include "draw.h"
 #include "logutils.h"
 #include "model.h"
+#include "clipping.h"
 
 #define DRAW_MAX_TRIANGLES 256
 EWRAM_DATA static RasterTriangle screenTriangles[DRAW_MAX_TRIANGLES]; 
@@ -73,7 +74,6 @@ static void drawFillTris(RasterTriangle *tri, int numTris)
     */
     RasterPoint v1, v2, v3;
     for (int i = 0; i < numTris; ++i) {
-
         v1 = tri[i].vert[0];
         v2 = tri[i].vert[1];
         v3 = tri[i].vert[2];
@@ -143,10 +143,31 @@ static void drawFillTris(RasterTriangle *tri, int numTris)
 
 
 static void drawWireframeTris(RasterTriangle *tri, int numTris) 
-{
-    // m5_line(v1.x, v1.y, v2.x, v2.y, clr);
-    // m5_line(v2.x, v2.y, v3.x, v3.y, clr);
-    // m5_line(v3.x, v3.y, v1.x, v1.y, clr);
+{ 
+    // TODO: Way too slow. 
+    for (int i = 0; i < numTris; ++i) {
+        RasterPoint clippedVerts[CLIPPING_MAX_POLY_LEN];
+        clippedVerts[0] = tri[i].vert[0];
+        clippedVerts[1] = tri[i].vert[1];
+        clippedVerts[2] = tri[i].vert[2];
+        
+        if (!RASTERPOINT_IN_BOUNDS_M5(clippedVerts[0]) || !RASTERPOINT_IN_BOUNDS_M5(clippedVerts[1]) || !RASTERPOINT_IN_BOUNDS_M5(clippedVerts[2])) {
+            for (int j = 0; j < 3; ++j) {
+                RasterPoint a = clippedVerts[j];
+                int nextIdx = (j + 1) < 3 ? j + 1 : 0;
+                RasterPoint b = clippedVerts[nextIdx];
+                if (clipLineCohenSutherland(&a, &b)) {
+                    m5_line(a.x, a.y, b.x, b.y, tri[i].color);
+                }
+            }
+        } else { // No clipping necessary.
+            for (int j = 0; j < 3; ++j) {
+                int nextIdx = (j + 1) < 3 ? j + 1 : 0;
+                m5_line(clippedVerts[j].x, clippedVerts[j].y, clippedVerts[nextIdx].x, clippedVerts[nextIdx].y, tri[i].color);
+            }
+        }
+    }
+
 }
 
 
@@ -273,9 +294,13 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
     performanceEnd(perfPolygonSort);
 
     performanceStart(perfFill); 
-    drawFillTris(screenTriangles, screenTriangleCount);    
+    if (options->shading == SHADING_WIREFRAME) {
+        drawWireframeTris(screenTriangles, screenTriangleCount);
+    } else {
+        drawFillTris(screenTriangles, screenTriangleCount);    
+    }
     performanceEnd(perfFill);
-//     char txt[128];
-//     sprintf(txt, "tris: %d", screenTriangleCount);
-//     m5_puts(8, 80, txt, CLR_FUCHSIA);
+    char txt[128];
+    sprintf(txt, "tris: %d", screenTriangleCount);
+    m5_puts(8, 80, txt, CLR_FUCHSIA);
 }

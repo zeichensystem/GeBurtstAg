@@ -27,7 +27,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 void scene3dInit(void) 
 {     
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(42)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(40.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(64)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(54.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -82,8 +82,8 @@ void scene3dUpdate(void)
 void scene3dDraw(void) 
 {
         drawBefore(&camera);
-        memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-1) * M5_SCALED_W)/2);
-        const ModelDrawOptions opts = {.lightDirectional=NULL , .lightPoint=&camera.pos, .lightPointAttenuation=true, .shading=SHADING_FLAT_LIGHTING, .wireframeColor=CLR_LIME};
+        memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
+        const ModelDrawOptions opts = {.lightDirectional=NULL , .lightPoint=&camera.pos, .lightPointAttenuation=true, .shading=SHADING_WIREFRAME, .wireframeColor=CLR_MAG};
         drawModelInstances(&camera, cubes, NUM_CUBES, &opts);
 }
 
