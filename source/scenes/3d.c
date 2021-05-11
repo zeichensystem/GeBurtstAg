@@ -13,7 +13,8 @@
 
 #define NUM_CUBES 9
 
-EWRAM_DATA static ModelInstance cubes[NUM_CUBES];
+EWRAM_DATA static ModelInstance __cubeBuffer[NUM_CUBES];
+static ModelInstancePool cubePool;
 
 static Camera camera;
 static Vec3 lightDirection;
@@ -27,7 +28,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 void scene3dInit(void) 
 {     
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(64)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(54.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(64)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(60.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -35,9 +36,10 @@ void scene3dInit(void)
         lightDirection = (Vec3){.x=int2fx(3), .y=int2fx(-4), .z=int2fx(-3)};
         lightDirection = vecUnit(lightDirection);
         
+        cubePool = modelInstancePoolNew(__cubeBuffer, sizeof __cubeBuffer / sizeof __cubeBuffer[0]);
         int size = 8;
         for (int i = 0; i < NUM_CUBES; ++i) {
-             cubes[i] = modelCubeNewInstance((Vec3){.x=int2fx(size * 1.5f * (i % 3) ), .y=int2fx(0), .z=int2fx(size * 1.5f * (i / 3)) }, int2fx(size));
+             modelCubeNewInstance(&cubePool, (Vec3){.x=int2fx(size * 1.5f * (i % 3) ), .y=int2fx(0), .z=int2fx(size * 1.5f * (i / 3)) }, int2fx(size), SHADING_FLAT_LIGHTING);
         }
 }        
 
@@ -54,11 +56,10 @@ void scene3dUpdate(void)
                 // cubes[i].pos.y = fxmul(sinFx(cubes[i].pos.x + cubes[i].pos.z +  fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
                 // cubes[i].scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
         }
-
-        cubes[4].pos.y = fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
-        cubes[4].yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
-        cubes[4].pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
-        cubes[4].roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
+        cubePool.instances[4].state.pos.y = fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
+        cubePool.instances[4].state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
+        cubePool.instances[4].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
+        cubePool.instances[4].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
 
         // Calculate the point to lookAt from the heading of the player/camera.
         playerAngle += fx12mul(-int2fx12(key_tri_shoulder()), deg2fxangle(fx12Tofx(timer.deltatime >> 1)));
@@ -73,8 +74,8 @@ void scene3dUpdate(void)
         camera.pos.y += fxmul(int2fx(key_tri_fire()), fx12Tofx(timer.deltatime << 4));
         camera.lookAt = (Vec3){.x = camera.pos.x + playerHeading.x, .y = camera.pos.y + playerHeading.y, .z = camera.pos.z + playerHeading.z};
 
-        if (key_is_down(KEY_START)) {
-                camera.lookAt = (Vec3){.x= cubes[4].pos.x, .y=0, .z=cubes[4].pos.z};
+        if (key_held(KEY_START)) {
+                camera.lookAt = (Vec3){.x= cubePool.instances[4].state.pos.x, .y=0, .z=cubePool.instances[4].state.pos.z};
         }
 }
 
@@ -83,8 +84,8 @@ void scene3dDraw(void)
 {
         drawBefore(&camera);
         memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
-        const ModelDrawOptions opts = {.lightDirectional=NULL , .lightPoint=&camera.pos, .lightPointAttenuation=true, .shading=SHADING_WIREFRAME, .wireframeColor=CLR_MAG};
-        drawModelInstances(&camera, cubes, NUM_CUBES, &opts);
+        drawModelInstancePools(&cubePool, 1, &camera, (ModelDrawLightingData){.directional=&lightDirection, .distanceAttenuation=false});
+
 }
 
 

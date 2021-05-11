@@ -11,6 +11,7 @@
 
 #define DRAW_MAX_TRIANGLES 256
 EWRAM_DATA static RasterTriangle screenTriangles[DRAW_MAX_TRIANGLES]; 
+static int screenTriangleCount = 0;
 
 #define RASTERPOINT_IN_BOUNDS_M5(vert) (vert.x >= 0 && vert.x < M5_SCALED_W && vert.y >= 0 && vert.y < M5_SCALED_H)
 #define BEHIND_CAM(vert) (vert.z > -cam->near ) // True if the Vec3 is behind the near plane of the camera (i.e. invisible).
@@ -22,19 +23,19 @@ void drawInit()
 {
     REG_DISPCNT = g_mode | DCNT_BG2;
     txt_init_std();
-    perfFill = performanceDataRegister("draw.c: drawFillTris (rasterisation)");
-    perfModelProcessing = performanceDataRegister("draw.c: drawModelInstances (pre-rasterisation)");
+    perfFill = performanceDataRegister("draw.c: rasterisation");
+    perfModelProcessing = performanceDataRegister("draw:c pre-rasterisation");
     perfPolygonSort = performanceDataRegister("draw.c: Polygon-sort");
     perfProject = performanceDataRegister("draw.c: drawModelInstance perspective");
 }
 
-void drawBefore(Camera *cam) 
+IWRAM_CODE void drawBefore(Camera *cam) 
 { 
     // Invariant: drawBefore is assumed to be called each frame once before the other draw functions are invoked.
     cameraComputeWorldToCamSpace(cam);
 }
 
-void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr) 
+IWRAM_CODE void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr) 
 {
     for (int i = 0; i < num; ++i) {
         Vec3 pointCamSpace = vecTransformed(cam->world2cam, points[i]);
@@ -49,12 +50,6 @@ void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr)
     }
 }
 
-static int triangleDepthCmp(const void *a, const void *b) 
-{
-        RasterTriangle *triA = (RasterTriangle*)a;
-        RasterTriangle *triB = (RasterTriangle*)b;
-        return triA->centroidZ - triB->centroidZ; // Smaller/"more negative" z values mean the triangle is farther away from the camera.
-}
 
 INLINE void swapRp(RasterPoint *a, RasterPoint *b) 
 {
@@ -63,8 +58,7 @@ INLINE void swapRp(RasterPoint *a, RasterPoint *b)
     *b = tmp;
 }
 
-
-static void drawFillTris(RasterTriangle *tri, int numTris) 
+INLINE void drawTriangleFlat(const RasterTriangle *tri) 
 { 
     /* 
         DDA triangle-filling (flat-shaded). Uses a top-left fill convention to avoid overdraw/gaps. 
@@ -73,110 +67,112 @@ static void drawFillTris(RasterTriangle *tri, int numTris)
         TODO: Subpixel-accuracy, cf. fatmap.txt.
     */
     RasterPoint v1, v2, v3;
-    for (int i = 0; i < numTris; ++i) {
-        v1 = tri[i].vert[0];
-        v2 = tri[i].vert[1];
-        v3 = tri[i].vert[2];
-        // Order vertices: v1 top, v2 middle, v3 bottom.
-        if (v1.y > v2.y) {
-            swapRp(&v1, &v2);
-        }
-        if (v2.y > v3.y) {
-            swapRp(&v2, &v3);
-        }
-        if (v1.y > v2.y) {
-            swapRp(&v1, &v2);
-        }
+    COLOR triColor = tri->color;
+    v1 = tri->vert[0];
+    v2 = tri->vert[1];
+    v3 = tri->vert[2];
+    // Order vertices: v1 top, v2 middle, v3 bottom.
+    if (v1.y > v2.y) {
+        swapRp(&v1, &v2);
+    }
+    if (v2.y > v3.y) {
+        swapRp(&v2, &v3);
+    }
+    if (v1.y > v2.y) {
+        swapRp(&v1, &v2);
+    }
+    if (v1.y == v3.y) { // Degenerate triangle, we don't draw those.
+        return;
+    }
+    // assertion(v1.y <= v2.y && v2.y <= v3.y, "draw.c: drawFillTris correct vertex ordering");
+ 
+    const bool middleLeft = v2.x <= v1.x; // If middleLeft is true, the triangle's left side consists of two edges, otherwise, it's the right side which consists of two edges.
+    
+    // First, we fill the top section of the triangle:
+    FIXED invslopeLong = fxdiv(int2fx(v3.x - v1.x), int2fx(v3.y - v1.y));
+    FIXED invslopeShort; 
+    if (v2.y - v1.y) { // For invslopeShort, it's important to avoid a division by zero in case we have a triangle with a flat top.
+        invslopeShort = fxdiv(int2fx(v2.x - v1.x), int2fx(v2.y - v1.y));
+    } else {
+        assertion(v3.y - v2.y, "draw.c: drawFillTris: v3.y - v2.y != 0");
+        invslopeShort = fxdiv(int2fx(v3.x - v2.x), int2fx(v3.y - v2.y)); 
+    }
+    int yStart = MAX(0, v1.y);
+    int yEnd = MIN(M5_SCALED_H - 1, v2.y);
+    int dy = yStart - v1.y; 
+    FIXED leftDeltaX = middleLeft ? invslopeShort : invslopeLong;
+    FIXED rightDeltaX = middleLeft ? invslopeLong : invslopeShort;
+    FIXED xLeft = int2fx(v1.x) + fxmul(int2fx(dy), leftDeltaX);
+    FIXED xRight = int2fx(v1.x) + fxmul(int2fx(dy), rightDeltaX);
+    for (int y = yStart; y < yEnd; ++y) { 
+        xLeft += leftDeltaX;
+        xRight += rightDeltaX;
+        const int left = MIN(MAX(0, fx2int(xLeft)), M5_SCALED_W - 1);
+        const int right = MIN(MAX(0, fx2int(xRight)), M5_SCALED_W - 1);
+        m5_hline(left, y, right - 1, triColor);
+    }
+    // Finally, we fill the bottom section of the triangle:
+    if (v2.y < v3.y) { // Avoid division by zero in case there is no bottom half.
+        invslopeShort = fxdiv(int2fx(v3.x - v2.x), int2fx(v3.y - v2.y));
+    } else {
+        return;
+    }
+    leftDeltaX = middleLeft ? invslopeShort : invslopeLong;
+    rightDeltaX = middleLeft ? invslopeLong : invslopeShort;
+    yStart = MAX(0, v2.y);
+    yEnd = MIN(M5_SCALED_H - 1, v3.y);
+    dy = yStart - v2.y; 
+    xLeft = middleLeft ? int2fx(v2.x) + fxmul(int2fx(dy), leftDeltaX) : xLeft + leftDeltaX;
+    xRight = middleLeft ? xRight + rightDeltaX : int2fx(v2.x) + fxmul(int2fx(dy), rightDeltaX);
+    for (int y = yStart; y < yEnd; ++y) { 
+        const int left = MIN(MAX(0, fx2int(xLeft)), M5_SCALED_W - 1);
+        const int right = MIN(MAX(0, fx2int(xRight)), M5_SCALED_W - 1);
+        m5_hline(left, y, right - 1, triColor);
+        xLeft += leftDeltaX;
+        xRight += rightDeltaX;
+    }
+}
 
-        if (v1.y == v3.y) { // Degenerate triangle, we don't draw those.
-            continue;
-        }
-        // assertion(v1.y <= v2.y && v2.y <= v3.y, "draw.c: drawFillTris correct vertex ordering");
-     
-        const bool middleLeft = v2.x <= v1.x; // If middleLeft is true, the triangle's left side consists of two edges, otherwise, it's the right side which consists of two edges.
 
-        // First, we fill the top section of the triangle:
-        FIXED invslopeLong = fxdiv(int2fx(v3.x - v1.x), int2fx(v3.y - v1.y));
-        FIXED invslopeShort; 
-        if (v2.y - v1.y) { // For invslopeShort, it's important to avoid a division by zero in case we have a triangle with a flat top.
-            invslopeShort = fxdiv(int2fx(v2.x - v1.x), int2fx(v2.y - v1.y));
-        } else {
-            assertion(v3.y - v2.y, "draw.c: drawFillTris: v3.y - v2.y != 0");
-            invslopeShort = fxdiv(int2fx(v3.x - v2.x), int2fx(v3.y - v2.y)); 
+INLINE void drawTriangleWireframe(const RasterTriangle *tri) 
+{ 
+    if (!RASTERPOINT_IN_BOUNDS_M5(tri->vert[0]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[1]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[2])) { // We have to clip against the screen.
+        for (int j = 0; j < 3; ++j) {
+            int nextIdx = (j + 1) < 3 ? j + 1 : 0;
+            RasterPoint a = tri->vert[j];
+            RasterPoint b = tri->vert[nextIdx];
+            if (clipLineCohenSutherland(&a, &b)) {
+                m5_line(a.x, a.y, b.x, b.y, tri->color);
+            }
         }
-        int yStart = MAX(0, v1.y);
-        int yEnd = MIN(M5_SCALED_H - 1, v2.y);
-        int dy = yStart - v1.y; 
-        FIXED leftDeltaX = middleLeft ? invslopeShort : invslopeLong;
-        FIXED rightDeltaX = middleLeft ? invslopeLong : invslopeShort;
-        FIXED xLeft = int2fx(v1.x) + fxmul(int2fx(dy), leftDeltaX);
-        FIXED xRight = int2fx(v1.x) + fxmul(int2fx(dy), rightDeltaX);
-        for (int y = yStart; y < yEnd; ++y) { 
-            xLeft += leftDeltaX;
-            xRight += rightDeltaX;
-            const int left = MIN(MAX(0, fx2int(xLeft)), M5_SCALED_W - 1);
-            const int right = MIN(MAX(0, fx2int(xRight)), M5_SCALED_W - 1);
-            m5_hline(left, y, right - 1, tri[i].color);
-        }
-        // Finally, we fill the bottom section of the triangle:
-        if (v2.y < v3.y) { // Avoid division by zero in case there is no bottom half.
-            invslopeShort = fxdiv(int2fx(v3.x - v2.x), int2fx(v3.y - v2.y));
-        } else {
-            continue;
-        }
-        leftDeltaX = middleLeft ? invslopeShort : invslopeLong;
-        rightDeltaX = middleLeft ? invslopeLong : invslopeShort;
-        yStart = MAX(0, v2.y);
-        yEnd = MIN(M5_SCALED_H - 1, v3.y);
-        dy = yStart - v2.y; 
-        xLeft = middleLeft ? int2fx(v2.x) + fxmul(int2fx(dy), leftDeltaX) : xLeft + leftDeltaX;
-        xRight = middleLeft ? xRight + rightDeltaX : int2fx(v2.x) + fxmul(int2fx(dy), rightDeltaX);
-        for (int y = yStart; y < yEnd; ++y) { 
-            const int left = MIN(MAX(0, fx2int(xLeft)), M5_SCALED_W - 1);
-            const int right = MIN(MAX(0, fx2int(xRight)), M5_SCALED_W - 1);
-            m5_hline(left, y, right - 1, tri[i].color);
-            xLeft += leftDeltaX;
-            xRight += rightDeltaX;
+    } else { // No clipping necessary.
+        for (int j = 0; j < 3; ++j) {
+            int nextIdx = (j + 1) < 3 ? j + 1 : 0;
+            m5_line(tri->vert[j].x, tri->vert[j].y, tri->vert[nextIdx].x,tri-> vert[nextIdx].y, tri->color);
         }
     }
 }
 
 
-static void drawWireframeTris(RasterTriangle *tri, int numTris) 
-{ 
-    // TODO: Way too slow. 
-    for (int i = 0; i < numTris; ++i) {
-        RasterPoint clippedVerts[CLIPPING_MAX_POLY_LEN];
-        clippedVerts[0] = tri[i].vert[0];
-        clippedVerts[1] = tri[i].vert[1];
-        clippedVerts[2] = tri[i].vert[2];
-        
-        if (!RASTERPOINT_IN_BOUNDS_M5(clippedVerts[0]) || !RASTERPOINT_IN_BOUNDS_M5(clippedVerts[1]) || !RASTERPOINT_IN_BOUNDS_M5(clippedVerts[2])) {
-            for (int j = 0; j < 3; ++j) {
-                RasterPoint a = clippedVerts[j];
-                int nextIdx = (j + 1) < 3 ? j + 1 : 0;
-                RasterPoint b = clippedVerts[nextIdx];
-                if (clipLineCohenSutherland(&a, &b)) {
-                    m5_line(a.x, a.y, b.x, b.y, tri[i].color);
-                }
-            }
-        } else { // No clipping necessary.
-            for (int j = 0; j < 3; ++j) {
-                int nextIdx = (j + 1) < 3 ? j + 1 : 0;
-                m5_line(clippedVerts[j].x, clippedVerts[j].y, clippedVerts[nextIdx].x, clippedVerts[nextIdx].y, tri[i].color);
-            }
-        }
-    }
-
+static int triangleDepthCmp(const void *a, const void *b) 
+{
+        RasterTriangle *triA = (RasterTriangle*)a;
+        RasterTriangle *triB = (RasterTriangle*)b;
+        return triA->centroidZ - triB->centroidZ; // Smaller/"more negative" z values mean the triangle is farther away from the camera.
 }
 
 
-void drawModelInstances(const Camera *cam, const ModelInstance *instances, int numInstances, const ModelDrawOptions *options) 
+ IWRAM_CODE static void modelInstancesPrepareDraw(Camera* cam, ModelInstance *instances, int numInstances, ModelDrawLightingData lightDat) 
 { 
-    performanceStart(perfModelProcessing);
-    int screenTriangleCount = 0;
+    /* 
+        Performs model to camera space transformations, perspective projection, and shading/lighting calculations.
+        Calculates the screen-space triangles which can be sorted and drawn later. 
+    */ 
     for (int instanceNum = 0; instanceNum < numInstances; ++instanceNum) {
-        const ModelInstance instance = instances[instanceNum];
+        ModelInstance *instance = instances + instanceNum;
+        if (instance->isEmpty) {
+            continue;
+        }
         
         // FIXED dx, dy, dz;
         // dx = ABS(instance.pos.x - cam->pos.x);
@@ -189,25 +185,42 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
         // }
 
         FIXED instanceRotMat[16];
-        matrix4x4createYawPitchRoll(instanceRotMat, instance.yaw, instance.pitch, instance.roll);
+        matrix4x4createYawPitchRoll(instanceRotMat, instance->state.yaw, instance->state.pitch, instance->state.roll);
         Vec3 vertsCamSpace[MAX_MODEL_VERTS];
-        for (int i = 0; i < instance.mod.numVerts; ++i) {
+        for (int i = 0; i < instance->state.mod.numVerts; ++i) {
             // Model space to world space:
-            vertsCamSpace[i] = vecScaled(instance.mod.verts[i], instance.scale);
+            vertsCamSpace[i] = vecScaled(instance->state.mod.verts[i], instance->state.scale);
             vecTransform(instanceRotMat, vertsCamSpace + i );
             // We translate manually so that instanceRotMat stays as is (so we can rotate our normals with the instanceRotMat in model space to calculate lighting):
-            vertsCamSpace[i].x += instance.pos.x;
-            vertsCamSpace[i].y += instance.pos.y;
-            vertsCamSpace[i].z += instance.pos.z;
+            vertsCamSpace[i].x += instance->state.pos.x;
+            vertsCamSpace[i].y += instance->state.pos.y;
+            vertsCamSpace[i].z += instance->state.pos.z;
             vecTransform(cam->world2cam, vertsCamSpace + i); // And finally, we're in camera space.
         }
 
         // Remember lightDir and attenuation (which don't depend on the faces) so we don't have to re-compute them redundantly in the inner faces loop.
+        PolygonShadingType instanceShading = instance->state.shading;
         Vec3 lightDir;
         FIXED attenuation = -1;
-        bool lightDirAttenuationCalculated = false;
-        for (int faceNum = 0; faceNum < instance.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
-            const Face face = instance.mod.faces[faceNum];
+        // Handle the shading options: 
+        if (instanceShading == SHADING_FLAT_LIGHTING) {
+            if (lightDat.point) {
+                if (lightDat.distanceAttenuation) {
+                    Vec3 dir;
+                    dir = vecSub(*lightDat.point, instance->state.pos);
+                    FIXED d = vecMag(dir);
+                    attenuation = fxdiv(int2fx(1), int2fx(1) + (d >> 5) + (fxmul(d, d) >> 7) );
+                    lightDir = vecUnit(dir);
+                }
+            } else if (lightDat.directional) {
+                lightDir = vecUnit(vecSub((Vec3){0, 0, 0}, *lightDat.directional)); // Invert the sign.
+            } else {
+                panic("draw.c: drawModelInstaces: Missing lighting vectors.");
+            }
+        }
+            
+        for (int faceNum = 0; faceNum < instance->state.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
+            const Face face = instance->state.mod.faces[faceNum];
              // Backface culling (assumes a clockwise winding order):
             const Vec3 a = vecSub(vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[0]]);
             const Vec3 b = vecSub(vertsCamSpace[face.vertexIndex[2]], vertsCamSpace[face.vertexIndex[0]]);
@@ -225,13 +238,11 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
                 continue;
             }
             RasterTriangle clippedTri;
-            performanceStart(perfProject);
             for (int i = 0; i < 3; ++i) { // Perspective projection, and conversion of the fixed point numbers to integers.
                 assertion(triVerts[i].z <= -cam->near, "draw.c: drawModelInstances: Perspective division in front of near-plane");
                 vecTransform(cam->perspMat, triVerts + i);
                 clippedTri.vert[i] = (RasterPoint){.x=fx2int(triVerts[i].x), .y=fx2int(triVerts[i].y)};   
             }
-            performanceEnd(perfProject);
             // Check if all vertices of the face are to the "outside-side" of a given clipping plane. If so, the face is invisible and we can skip it.
             if (triVerts[0].x < 0 && triVerts[1].x < 0 && triVerts[2].x < 0) { // All vertices are to the left of the left-plane.
                 continue;
@@ -243,25 +254,8 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
                 continue;
             }
 
-            // Handle the face's shading options: 
-            if (!lightDirAttenuationCalculated) { // Only calculate once per model instance and not once per face.
-                lightDirAttenuationCalculated = true;
-                if (options->shading == SHADING_FLAT_LIGHTING) {
-                    if (options->lightPoint) {
-                        Vec3 dir = vecSub(*options->lightPoint, instance.pos);
-                        if (options->lightPointAttenuation) {
-                            FIXED d = vecMag(dir);
-                            attenuation = fxdiv(int2fx(1), int2fx(1) + (d >> 5) + (fxmul(d, d) >> 7) );
-                        }
-                        lightDir = vecUnit(dir);
-                    } else if (options->lightDirectional) {
-                        lightDir = vecSub((Vec3){0, 0, 0}, *options->lightDirectional); // Invert the sign.
-                    } else {
-                        panic("draw.c: drawModelInstaces: Missing lighting vectors.");
-                    }
-                }
-            }
-            if (options->shading == SHADING_FLAT_LIGHTING) {
+            clippedTri.shading = instanceShading;
+            if (instanceShading == SHADING_FLAT_LIGHTING) {
                 const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); // Rotate the face's normal (in model space).
                 const FIXED lightAlpha = vecDot(lightDir, faceNormal);
                 if (lightAlpha > 0) {
@@ -274,10 +268,8 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
                 } else {
                     clippedTri.color = RGB15(1,1,1);
                 } 
-            } else if (options->shading == SHADING_FLAT) {
+            } else if (instanceShading == SHADING_FLAT || instanceShading == SHADING_WIREFRAME) {
                 clippedTri.color = face.color;
-            } else if (options->shading == SHADING_WIREFRAME) {
-                clippedTri.color = options->wireframeColor;
             } else {
                 panic("draw.c: drawModelInstances: Unknown shading option.");
             }
@@ -287,20 +279,27 @@ void drawModelInstances(const Camera *cam, const ModelInstance *instances, int n
             screenTriangles[screenTriangleCount++] = clippedTri;
         }
     }
-    performanceEnd(perfModelProcessing);
-    // All our Triangles are ready for drawing! We only should order them according to their depth, as we sadly don't have a z-buffer.
-    performanceStart(perfPolygonSort);
-    qsort(screenTriangles, screenTriangleCount, sizeof(screenTriangles[0]), triangleDepthCmp);
-    performanceEnd(perfPolygonSort);
+}
 
-    performanceStart(perfFill); 
-    if (options->shading == SHADING_WIREFRAME) {
-        drawWireframeTris(screenTriangles, screenTriangleCount);
-    } else {
-        drawFillTris(screenTriangles, screenTriangleCount);    
+
+IWRAM_CODE void drawModelInstancePools(ModelInstancePool *pools, int numPools, Camera *cam, ModelDrawLightingData lightDat) 
+{
+    screenTriangleCount = 0;
+    performanceStart(perfModelProcessing);
+    for (int i = 0; i < numPools; ++i) { 
+        modelInstancesPrepareDraw(cam, pools[i].instances, pools[i].POOL_CAPACITY, lightDat);
+    }
+    performanceEnd(perfModelProcessing);
+
+    qsort(screenTriangles, screenTriangleCount, sizeof(screenTriangles[0]), triangleDepthCmp);
+
+    performanceStart(perfFill);
+    for (int i = 0; i < screenTriangleCount; ++i) {
+        if (screenTriangles[i].shading == SHADING_FLAT || screenTriangles[i].shading == SHADING_FLAT_LIGHTING) {
+            drawTriangleFlat(screenTriangles + i);
+        } else {
+            drawTriangleWireframe(screenTriangles + i);
+        }
     }
     performanceEnd(perfFill);
-    char txt[128];
-    sprintf(txt, "tris: %d", screenTriangleCount);
-    m5_puts(8, 80, txt, CLR_FUCHSIA);
 }

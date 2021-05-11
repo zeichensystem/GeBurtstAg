@@ -27,16 +27,46 @@ typedef struct Model {
     int numVerts, numFaces;
 } Model;
 
+
+typedef struct ModelDrawLightingData {
+    bool distanceAttenuation;
+    const Vec3 *directional;
+    const Vec3 *point;
+
+} ModelDrawLightingData;
+
+
 typedef struct ModelInstance { // Different Instances share their vertex/face data, which saves us memory. 
-    Model mod;
-    Vec3 pos;
-    FIXED scale;
-    ANGLE_FIXED_12 yaw, pitch, roll;
+    bool isEmpty;
+    union { 
+        struct ModelInstance *__next; // Only neeeded if empty. Note: We could also use ModelInstanceIDs instead of pointers.
+        struct { // Only need those when the instance is not empty. 
+            Model mod;
+            Vec3 pos;
+            FIXED scale;
+            ANGLE_FIXED_12 yaw, pitch, roll;
+            PolygonShadingType shading;
+            FIXED camSpaceDepth;
+        }; 
+    } state;
+
 } ModelInstance;
+
+
+typedef struct ModelInstancePool {
+    int POOL_CAPACITY; 
+    int instanceCount;
+    ModelInstance *instances;
+    ModelInstance *firstAvailable;
+} ModelInstancePool;
+
+ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity);
+void modelInstancePoolReset(ModelInstancePool *pool);
+int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance);
 
 
 void modelInit(void);
 Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces);
-ModelInstance modelCubeNewInstance(Vec3 pos, FIXED scale);
+ModelInstance *modelCubeNewInstance(ModelInstancePool *pool, Vec3 pos, FIXED scale, PolygonShadingType shading);
 
 #endif

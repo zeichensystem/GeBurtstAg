@@ -91,7 +91,7 @@ int performanceDataRegister(const char* name)
     PerformanceData *perfData = performanceData + currentPerformanceId;
     perfData->id = currentPerformanceId;
     perfData->timer = timerNew(TIMER_MAX_DURATION, TIMER_PERF); 
-    perfData->avgSamples = 1;
+    perfData->avgSamples = 0;
     perfData->avgTime = 0;
     strlcpy(perfData->name, name, PERF_NAME_MAX_SIZE);
     currentPerformanceId++;
@@ -118,8 +118,7 @@ void performanceEnd(int perfId)
 void performanceReset(void) 
 {
     for (int i = 0; i < currentPerformanceId; ++i) {
-        // performanceData[i].avgTime = performanceData[i].avgTime + fx12div(performanceData[i].timer.time - performanceData[i].avgTime, int2fx12(performanceData[i].avgSamples)); 
-        performanceData[i].avgTime = performanceData[i].timer.time;
+        performanceData[i].avgTime += performanceData[i].timer.time;
         performanceData[i].avgSamples++;
         timerRewind(&performanceData[i].timer);
      }
@@ -131,7 +130,9 @@ void performancePrintAll(void)
         PerformanceData perf = performanceData[i];
         if (perf.avgTime) {
             int shift = perf.timer.type == TIMER_PERF ? 4 : 0;
-            mgba_printf("%s: %f ms", perf.name, fx12ToFloat(perf.avgTime * 1000 >> shift));
+            mgba_printf("%s: %f ms (%d samples)", perf.name, fx12ToFloat( fx12div(perf.avgTime, int2fx12(perf.avgSamples)) * 1000 >> shift), perf.avgSamples);
+            performanceData[i].avgSamples = 0;
+            performanceData[i].avgTime = 0;
         }
 
     }

@@ -6,24 +6,11 @@
 #include "model.h"
 #include "raster_geometry.h"
 
-typedef enum PolygonShading { 
-    SHADING_FLAT_LIGHTING,
-    SHADING_FLAT, 
-    SHADING_WIREFRAME
-} PolygonShading;
-
-typedef struct ModelDrawOptions {
-    const PolygonShading shading;
-    const COLOR wireframeColor;
-    const Vec3 *lightDirectional;
-    const Vec3 *lightPoint;
-    const bool lightPointAttenuation;
-} ModelDrawOptions;
-
 void drawInit();
 void drawBefore(Camera *cam);
 
-void drawModelInstances(const Camera *cam, const ModelInstance *instances, int numInstances, const ModelDrawOptions *options);
+// void drawModelInstances(const Camera *cam, const ModelInstance *instances, int numInstances, const ModelDrawOptions *options);
+void drawModelInstancePools(ModelInstancePool *pools, int numPools, Camera *cam, ModelDrawLightingData lightDat ); 
 void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr);
 
 #endif

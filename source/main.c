@@ -61,7 +61,7 @@ int main(void)
     bg_rotscale_ex(&bgaff, &asx);
     REG_BG_AFFINE[2]= bgaff;
 
-    Timer showPerfTimer = timerNew(int2fx12(2), TIMER_REGULAR);
+    Timer showPerfTimer = timerNew(int2fx12(4), TIMER_REGULAR); // We don't want to print the performance data every frame, so we use a timer. 
     timerStart(&showPerfTimer);
 
     while (1) {
@@ -78,7 +78,7 @@ int main(void)
 
         vid_flip();
 
-        if (showPerfTimer.done) { // We don't want to print the performance data every frame, so we use a timer. 
+        if (showPerfTimer.done || !g_frameCount) { 
             performancePrintAll();
             timerStart(&showPerfTimer);
         }

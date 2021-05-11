@@ -43,9 +43,13 @@ CWARNINGS   :=	-Wall -Wextra -Wpedantic -Wshadow -Wundef -Wunused-parameter -Wmi
 				-Wstack-usage=16384
 
 # -fwrapv
-CFLAGS	:= $(CWARNINGS) -O2 -flto \
-		-mcpu=arm7tdmi -mtune=arm7tdmi\
-		$(ARCH)
+
+
+ifeq ($(DEBUG),1)
+	CFLAGS := $(CWARNINGS) -gdwarf-2 -Wall -mcpu=arm7tdmi -mtune=arm7tdmi $(ARCH)
+else
+	CFLAGS	:= $(CWARNINGS) -O2 -flto -mcpu=arm7tdmi -mtune=arm7tdmi $(ARCH)
+endif
 
 CFLAGS	+=	$(INCLUDE)
 
