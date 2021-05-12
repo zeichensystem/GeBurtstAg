@@ -84,7 +84,7 @@ void scene3dDraw(void)
 {
         drawBefore(&camera);
         memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
-        drawModelInstancePools(&cubePool, 1, &camera, (ModelDrawLightingData){.directional=&lightDirection, .distanceAttenuation=false});
+        drawModelInstancePools(&cubePool, 1, &camera, (ModelDrawLightingData){.type=LIGHT_DIRECTIONAL, .light.directional=&lightDirection, .attenuation=NULL});
 
 }
 

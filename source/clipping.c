@@ -17,17 +17,15 @@ typedef enum ClipEdges {
     RIGHT_EDGE
 } ClipEdges;
 
-
-RasterPoint calcIntersect2d(ClipEdges edge, RasterPoint current, RasterPoint prev) 
+/* 
+    Calculates line intersections against the screen borders, used for 2d clipping.
+    Invariant: To be called only when the given intersection actually exists, which is the case for our use case. 
+    (But otherwise, the assertions should catch the divisions by zero in those cases).  
+    cf. https://www.cs.helsinki.fi/group/goa/viewing/leikkaus/intro2.html
+    (Their code doesn't take into account division by zero explicity, as they use 1/slope for the top/bottom intersect; my code does by calculating the invslope directly.)
+*/
+static RasterPoint calcIntersect2d(ClipEdges edge, RasterPoint current, RasterPoint prev) 
 { 
-    /* 
-        Calculates line intersections against the screen borders, used for 2d clipping.
-        Invariant: To be called only when the given intersection actually exists, which is the case for our use case. 
-        (But otherwise, the assertions should catch the divisions by zero in those cases).  
-
-        cf. https://www.cs.helsinki.fi/group/goa/viewing/leikkaus/intro2.html
-        (Their code doesn't take into account division by zero explicity, as they use 1/slope for the top/bottom intersect; my code does by calculating the invslope directly.)
-    */
     RasterPoint inter;
     FIXED slope, invslope;
     switch (edge) {
@@ -62,12 +60,14 @@ RasterPoint calcIntersect2d(ClipEdges edge, RasterPoint current, RasterPoint pre
 }
 
 
+/* 
+    Used by the Sutherland Hodgman Clipping against the Screen. 
+    Returns true if the given point lies on the same side of the given screen's edge as the remainder of the screen. 
+    This does *not* imply the point actually lies within the screen, that would be incorrect for the purposes of the Sutherland-Hodgman algorithm. 
+*/
 INLINE bool inside_clip(RasterPoint point, ClipEdges edge) 
 {
-    /* Used by the Sutherland Hodgman Clipping against the Screen. 
-       Returns true if the given point lies on the same side of the given screen's edge as the remainder of the screen. 
-       This does *not* imply the point actually lies within the screen, that would be incorrect for the purposes of the Sutherland-Hodgman algorithm. 
-    */
+
     switch(edge) {
         case TOP_EDGE:
             return point.y >= 0; 
@@ -87,13 +87,11 @@ INLINE bool inside_clip(RasterPoint point, ClipEdges edge)
     }
 }
 
+/*  
+    cf. https://en.wikipedia.org/wiki/Sutherland–Hodgman_algorithm
+*/
 int clipTriangleVerts2d(RasterPoint outputVertices[CLIPPING_MAX_POLY_LEN]) 
 {
-    /*  
-        Takes the outputVertices (with index 0 to 3 filled by the triangle which we want to clip against the screen), and modifies it to contain the vertices of the n-gon clipped to the screen from 0 to n - 1.  
-        Returns the number of vertices n of the clipped n-gon that are contained in outputVertices from 0 to n -1 (can be zero if the triangle is not visible on the screen after clipping). 
-        cf. https://en.wikipedia.org/wiki/Sutherland–Hodgman_algorithm
-    */
     int outputLen = 3;
     RasterPoint inputList[CLIPPING_MAX_POLY_LEN];
 
@@ -122,9 +120,9 @@ int clipTriangleVerts2d(RasterPoint outputVertices[CLIPPING_MAX_POLY_LEN])
         Note that we can only check this after the algorithm has terminated, as the intermediate steps can yield intermediary out-of-screen vertices. 
         Checking for out-of-screen vertices while we haven't constructed the final outputVertices array *does not make sense* due to the nature of S-H-clipping. 
     */ 
-    // for (int i = 0; i < outputLen; ++i) { 
-    //     assertion(RASTERPOINT_IN_BOUNDS_M5(outputVertices[i]), "draw.c: clipTriangleVerts2d: Vertex within screen bounds");
-    // }
+    for (int i = 0; i < outputLen; ++i) { 
+        assertion(RASTERPOINT_IN_BOUNDS_M5(outputVertices[i]), "draw.c: clipTriangleVerts2d: Vertex within screen bounds");
+    }
     return outputLen; 
 }
 
@@ -159,7 +157,7 @@ INLINE OutCode computeOutcode(const RasterPoint *a)
 }
 
 bool clipLineCohenSutherland(RasterPoint *a, RasterPoint *b) 
-{ // Returns true if the resulting line is visible on the screen. 
+{  
     OutCode outcodeA = computeOutcode(a);
     OutCode outcodeB = computeOutcode(b);
 

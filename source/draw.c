@@ -31,7 +31,6 @@ void drawInit()
 
 IWRAM_CODE void drawBefore(Camera *cam) 
 { 
-    // Invariant: drawBefore is assumed to be called each frame once before the other draw functions are invoked.
     cameraComputeWorldToCamSpace(cam);
 }
 
@@ -50,7 +49,6 @@ IWRAM_CODE void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr)
     }
 }
 
-
 INLINE void swapRp(RasterPoint *a, RasterPoint *b) 
 {
     RasterPoint tmp = *a;
@@ -58,14 +56,14 @@ INLINE void swapRp(RasterPoint *a, RasterPoint *b)
     *b = tmp;
 }
 
+/* 
+    DDA triangle-filling (flat-shaded). Uses a top-left fill convention to avoid overdraw/gaps. 
+    The parts of triangles outside of the screen are simply not drawn (we avoid having to do 2d-clipping this way; it's faster than the Sutherland-Hodgman 2d-clipping approach I've tested).
+    TODO: This is not particularly correct and not at all efficient, but my more complicated implementations I've tried so far were even more inconsistent, and not faster. 
+    TODO: Subpixel-accuracy, cf. fatmap.txt.
+*/
 INLINE void drawTriangleFlat(const RasterTriangle *tri) 
 { 
-    /* 
-        DDA triangle-filling (flat-shaded). Uses a top-left fill convention to avoid overdraw/gaps. 
-        The parts of triangles outside of the screen are simply not drawn (we avoid having to do 2d-clipping this way; it's faster than the Sutherland-Hodgman 2d-clipping approach I've tested).
-        TODO: This is not particularly correct and not at all efficient, but my more complicated implementations I've tried so far were even more inconsistent, and not faster. 
-        TODO: Subpixel-accuracy, cf. fatmap.txt.
-    */
     RasterPoint v1, v2, v3;
     COLOR triColor = tri->color;
     v1 = tri->vert[0];
@@ -133,7 +131,6 @@ INLINE void drawTriangleFlat(const RasterTriangle *tri)
     }
 }
 
-
 INLINE void drawTriangleWireframe(const RasterTriangle *tri) 
 { 
     if (!RASTERPOINT_IN_BOUNDS_M5(tri->vert[0]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[1]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[2])) { // We have to clip against the screen.
@@ -161,28 +158,63 @@ static int triangleDepthCmp(const void *a, const void *b)
         return triA->centroidZ - triB->centroidZ; // Smaller/"more negative" z values mean the triangle is farther away from the camera.
 }
 
+/* 
+    C does not have nested functions, but we got macros! 
+    I'm sorry. 
+*/
+#define INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION()                                                                                                                            \
+        PolygonShadingType instanceShading = instance->state.shading;                                                                                                       \
+        Vec3 lightDir;                                                                                                                                                      \
+        FIXED attenuation = -1;                                                                                                                                             \
+        if (instanceShading == SHADING_FLAT_LIGHTING) {                                                                                                                     \
+            if (lightDat.type == LIGHT_POINT) {                                                                                                                             \
+                Vec3 dir = vecSub(*lightDat.light.point, instance->state.pos);                                                                                              \
+                if (lightDat.attenuation != NULL) {                                                                                                                         \
+                    /* http://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation (last retrieved 2021-05-12) */                                                   \
+                    FIXED d = vecMag(dir);                                                                                                                                  \
+                    attenuation = fxdiv(int2fx(1), int2fx(1) + fxmul(d, lightDat.attenuation->linear) + fxmul(fxmul(d, d), lightDat.attenuation->quadratic) );              \
+                }                                                                                                                                                           \
+                lightDir = vecUnit(dir);                                                                                                                                    \
+            } else if (lightDat.type == LIGHT_DIRECTIONAL) {                                                                                                                \
+                lightDir = vecUnit(vecSub((Vec3){0, 0, 0}, *lightDat.light.directional)); /* Invert the sign. */                                                            \
+            } else {                                                                                                                                                        \
+                panic("draw.c: drawModelInstaces: Missing lighting vectors.");                                                                                              \
+            }                                                                                                                                                               \
+        }                                                                                                                                                                   \
 
+#define FACE_CALC_COLOR() {                                                                                                     \
+    if (instanceShading == SHADING_FLAT_LIGHTING) {                                                                             \
+        const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); /* Rotate the face's normal (in model space). */   \
+        const FIXED lightAlpha = vecDot(lightDir, faceNormal);                                                                  \
+        if (lightAlpha > 0) {                                                                                                   \
+            COLOR shade = fx2int(fxmul(lightAlpha, int2fx(31)));                                                                \
+            if (attenuation != -1) {                                                                                            \
+                shade = fx2int(fxmul(attenuation, int2fx(shade)));                                                              \
+            }                                                                                                                   \
+            shade = MIN(MAX(1, shade), 31);                                                                                     \
+            screenTri.color = RGB15(shade, shade, shade);                                                                       \
+        } else {                                                                                                                \
+            screenTri.color = RGB15(1,1,1);                                                                                     \
+        }                                                                                                                       \
+    } else if (instanceShading == SHADING_FLAT || instanceShading == SHADING_WIREFRAME) {                                       \
+        screenTri.color = face.color;                                                                                           \
+    } else {                                                                                                                    \
+        panic("draw.c: drawModelInstances: Unknown shading option.");                                                           \
+    }                                                                                                                           \
+}                                                                                                                               \
+                             
+/* 
+    Performs model to camera space transformations, perspective projection, and shading/lighting calculations.
+    Calculates the screen-space triangles which can be sorted and drawn later. 
+*/ 
  IWRAM_CODE static void modelInstancesPrepareDraw(Camera* cam, ModelInstance *instances, int numInstances, ModelDrawLightingData lightDat) 
 { 
-    /* 
-        Performs model to camera space transformations, perspective projection, and shading/lighting calculations.
-        Calculates the screen-space triangles which can be sorted and drawn later. 
-    */ 
     for (int instanceNum = 0; instanceNum < numInstances; ++instanceNum) {
         ModelInstance *instance = instances + instanceNum;
         if (instance->isEmpty) {
             continue;
         }
-        
-        // FIXED dx, dy, dz;
-        // dx = ABS(instance.pos.x - cam->pos.x);
-        // dy = ABS(instance.pos.y - cam->pos.y);
-        // dz = ABS(instance.pos.z - cam->pos.z);
-        // FIXED dist = fxmul(dx, dx) + fxmul(dy, dy) + fxmul(dz, dz);
-        // dist = Sqrt(dist << FIX_SHIFT); // sqrt(2**8) * sqrt(2**8) = 2**8
-        // if (dist > cam->far) {
-        //     continue;
-        // }
+        // TODO: Insert bounding-sphere culling here.
 
         FIXED instanceRotMat[16];
         matrix4x4createYawPitchRoll(instanceRotMat, instance->state.yaw, instance->state.pitch, instance->state.roll);
@@ -198,26 +230,8 @@ static int triangleDepthCmp(const void *a, const void *b)
             vecTransform(cam->world2cam, vertsCamSpace + i); // And finally, we're in camera space.
         }
 
-        // Remember lightDir and attenuation (which don't depend on the faces) so we don't have to re-compute them redundantly in the inner faces loop.
-        PolygonShadingType instanceShading = instance->state.shading;
-        Vec3 lightDir;
-        FIXED attenuation = -1;
-        // Handle the shading options: 
-        if (instanceShading == SHADING_FLAT_LIGHTING) {
-            if (lightDat.point) {
-                if (lightDat.distanceAttenuation) {
-                    Vec3 dir;
-                    dir = vecSub(*lightDat.point, instance->state.pos);
-                    FIXED d = vecMag(dir);
-                    attenuation = fxdiv(int2fx(1), int2fx(1) + (d >> 5) + (fxmul(d, d) >> 7) );
-                    lightDir = vecUnit(dir);
-                }
-            } else if (lightDat.directional) {
-                lightDir = vecUnit(vecSub((Vec3){0, 0, 0}, *lightDat.directional)); // Invert the sign.
-            } else {
-                panic("draw.c: drawModelInstaces: Missing lighting vectors.");
-            }
-        }
+        // Calculate lightDir and attenuation (which don't depend on the faces, only on the instance) so we don't have to re-compute them redundantly in the inner loop over the faces.
+        INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION();
             
         for (int faceNum = 0; faceNum < instance->state.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
             const Face face = instance->state.mod.faces[faceNum];
@@ -233,15 +247,15 @@ static int triangleDepthCmp(const void *a, const void *b)
             Vec3 triVerts[3] = {vertsCamSpace[face.vertexIndex[0]], vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[2]]};
             // TODO: Proper 3d clipping against the near plane (so far, triangles are discared even if only one vertex is behind the near plane).
             if (BEHIND_CAM(triVerts[0]) || BEHIND_CAM(triVerts[1]) || BEHIND_CAM(triVerts[2])) {  // Triangle extends behind the near clipping plane -> reject the whole thing. 
-                continue; // TODO!
+                continue; 
             } else if (triVerts[0].z < -cam->far || triVerts[1].z < -cam->far || triVerts[1].z < -cam->far) { // Triangle extends beyond the far-plane -> reject the whole thing.
                 continue;
             }
-            RasterTriangle clippedTri;
+            RasterTriangle screenTri;
             for (int i = 0; i < 3; ++i) { // Perspective projection, and conversion of the fixed point numbers to integers.
                 assertion(triVerts[i].z <= -cam->near, "draw.c: drawModelInstances: Perspective division in front of near-plane");
                 vecTransform(cam->perspMat, triVerts + i);
-                clippedTri.vert[i] = (RasterPoint){.x=fx2int(triVerts[i].x), .y=fx2int(triVerts[i].y)};   
+                screenTri.vert[i] = (RasterPoint){.x=fx2int(triVerts[i].x), .y=fx2int(triVerts[i].y)};   
             }
             // Check if all vertices of the face are to the "outside-side" of a given clipping plane. If so, the face is invisible and we can skip it.
             if (triVerts[0].x < 0 && triVerts[1].x < 0 && triVerts[2].x < 0) { // All vertices are to the left of the left-plane.
@@ -254,33 +268,18 @@ static int triangleDepthCmp(const void *a, const void *b)
                 continue;
             }
 
-            clippedTri.shading = instanceShading;
-            if (instanceShading == SHADING_FLAT_LIGHTING) {
-                const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); // Rotate the face's normal (in model space).
-                const FIXED lightAlpha = vecDot(lightDir, faceNormal);
-                if (lightAlpha > 0) {
-                    COLOR shade = fx2int(fxmul(lightAlpha, int2fx(31)));
-                    if (attenuation != -1) {
-                        shade = fx2int(fxmul(attenuation, int2fx(shade)));
-                    }
-                    shade = MIN(MAX(1, shade), 31);
-                    clippedTri.color = RGB15(shade, shade, shade);
-                } else {
-                    clippedTri.color = RGB15(1,1,1);
-                } 
-            } else if (instanceShading == SHADING_FLAT || instanceShading == SHADING_WIREFRAME) {
-                clippedTri.color = face.color;
-            } else {
-                panic("draw.c: drawModelInstances: Unknown shading option.");
-            }
+            screenTri.shading = instanceShading;
+            FACE_CALC_COLOR();
     
-            clippedTri.centroidZ = vertsCamSpace[face.vertexIndex[0]].z; // TODO HACK: That's not the actual centroid (we'd need an expensive division for that), but this is good enough for small faces.
+            screenTri.centroidZ = vertsCamSpace[face.vertexIndex[0]].z; // TODO HACK: That's not the actual centroid (we'd need an expensive division for that), but this is good enough for small faces.
             assertion(screenTriangleCount < DRAW_MAX_TRIANGLES, "draw.c: drawModelInstances: screenTriangleCount < DRAW_MAX_TRIANGLES");
-            screenTriangles[screenTriangleCount++] = clippedTri;
+            screenTriangles[screenTriangleCount++] = screenTri;
         }
     }
 }
 
+#undef INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION
+#undef FACE_CALC_COLOR
 
 IWRAM_CODE void drawModelInstancePools(ModelInstancePool *pools, int numPools, Camera *cam, ModelDrawLightingData lightDat) 
 {

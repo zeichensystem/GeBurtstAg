@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/usr/local/include",
+                "${workspaceFolder}/**",
+                "/opt/devkitPro/libtonc/include",
+                "${workspaceFolder}/source/",
+                "/opt/devkitPro/devkitARM/arm-none-eabi/include"
+            ],
+            "defines": [],
+            // "intelliSenseMode": "",
+            "browse": {
+                "path": [
+                    // "/usr/local/include",
+                    "${workspaceFolder}/**",
+                    "/opt/devkitPro/devkitARM/arm-none-eabi/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
+        }
+    ],
+    "version": 4
+}

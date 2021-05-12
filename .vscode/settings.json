@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "tonc_types.h": "c",
+        "tonc_tte.h": "c",
+        "tonc_video.h": "c",
+        "tonc_memdef.h": "c",
+        "camera.h": "c",
+        "memory.h": "c",
+        "algorithm": "c",
+        "stdlib.h": "c",
+        "math.h": "c",
+        "draw.h": "c",
+        "tonc_math.h": "c",
+        "logutils.h": "c",
+        "typeinfo": "c",
+        "__locale": "c",
+        "tonc_memmap.h": "c",
+        "tonc_input.h": "c",
+        "scene.h": "c",
+        "chrono": "c",
+        "random": "c",
+        "iterator": "c",
+        "timer.h": "c",
+        "thread": "c"
+    }
+}

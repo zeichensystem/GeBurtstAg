@@ -14,24 +14,8 @@ static Vec3 cubeModelVerts[8];
 static Face cubeModelFaces[12];
 static Model cubeModel;
 
-Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces) 
+void modelInstancePoolReset(ModelInstancePool *pool) 
 {
-    assertion(numVerts <= MAX_MODEL_VERTS, "model.c: modelNew: numVert <= MAX");
-    assertion(numFaces <= MAX_MODEL_FACES, "model.c: modelNew: numFaces <= MAX");
-    Model m = {.faces=faces, .verts=verts, .numVerts=numVerts, .numFaces=numFaces};
-    return m;
-}
-
-
-/*
-    We want to use object pools to manage our modelInstances, just a thin abstraction on top of static arrays with no dynamic allocations etc. 
-    That means we can add and remove instances in constant time if we want that. 
-    Only disadvantage would be that we have to iterate over empty slots then if we want to draw all and don't want to have a seperate array,
-    (but if we just keep our pools full, or mostly full, they are equivalent to regular arrays in that regard). 
-    cf. https://gameprogrammingpatterns.com/object-pool.html (last retrieved: 2021-05-11)
-*/
-
-void modelInstancePoolReset(ModelInstancePool *pool) {
     // Setup the free list of the ModelInstance object pool.
     for (int i = 0; i < pool->POOL_CAPACITY; ++i) {
         pool->instances[i].isEmpty = true;
@@ -46,7 +30,8 @@ ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity
     return new;
 }
 
-static ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading) {
+static ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading) 
+{
     assertion(pool != NULL, "model.c: modelInstanceAdd: pool != NULL");
     assertion(pool->firstAvailable != NULL, "model.c: modelInstanceAdd: pool capacity not exceeded (by pointer)");
     assertion(pool->instanceCount < pool->POOL_CAPACITY, "model.c: modelInstancePoolAdd: pool capacity not exceeded (by count)");
@@ -83,7 +68,6 @@ int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance)
     return pool->instanceCount;
 }
 
-
 ModelInstance *modelCubeNewInstance(ModelInstancePool *pool, Vec3 pos, FIXED scale, PolygonShadingType shading) 
 {
     assertion(pool->instanceCount < pool->POOL_CAPACITY, "model.c: modelCubeNewInstance: pool not full");
@@ -91,9 +75,16 @@ ModelInstance *modelCubeNewInstance(ModelInstancePool *pool, Vec3 pos, FIXED sca
 }
 
 
+Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces) 
+{
+    assertion(numVerts <= MAX_MODEL_VERTS, "model.c: modelNew: numVert <= MAX");
+    assertion(numFaces <= MAX_MODEL_FACES, "model.c: modelNew: numFaces <= MAX");
+    Model m = {.faces=faces, .verts=verts, .numVerts=numVerts, .numFaces=numFaces};
+    return m;
+}
+
 void modelInit(void) 
 {
-
     FIXED half = int2fx(1) >> 2; // quarter?
     Vec3 verts[8] = {
         // front plane
@@ -133,5 +124,3 @@ void modelInit(void)
     memcpy(cubeModelFaces, trigs, 12 * sizeof(Face));
     cubeModel = modelNew(cubeModelVerts, cubeModelFaces, 8, 12);
 }
-
-

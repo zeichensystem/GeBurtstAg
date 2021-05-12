@@ -21,7 +21,7 @@ typedef struct Timer {
     FIXED_12 time, duration, deltatime;
     bool stopped, done;
 
-    u32 __prevTimerState;
+    s32 __prevTimerState;
 } Timer;
 
 Timer timerNew(FIXED_12 duration, TimerType type);

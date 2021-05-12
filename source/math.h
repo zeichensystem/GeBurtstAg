@@ -9,13 +9,13 @@
 #define ONE_DEGREE  0xB6
 #define FIXED_12_SCALE (1 << 12)
 
-
 typedef struct Vec3 {
      FIXED x, y, z;
 } Vec3; 
 
 typedef s32 FIXED_12;
 typedef FIXED_12 ANGLE_FIXED_12;
+
 
 IWRAM_CODE Vec3 vecScaled(Vec3 vec, FIXED factor);
 IWRAM_CODE void vecScale(Vec3 *vec, FIXED factor);
@@ -27,21 +27,17 @@ IWRAM_CODE FIXED vecDot(Vec3 a, Vec3 b);
 IWRAM_CODE Vec3 vecUnit(Vec3 a);
 IWRAM_CODE FIXED vecMag(Vec3 a);
 
-
 IWRAM_CODE Vec3 vecTransformed(const FIXED matrix[16], Vec3 vec);
 IWRAM_CODE void vecTransform(const FIXED matrix[16], Vec3 *vec);
-
 
 IWRAM_CODE void matrix4x4setIdentity(FIXED matrix[16]);
 IWRAM_CODE void matrix4x4SetTranslation(FIXED matrix[16], Vec3 translation);
 IWRAM_CODE void matrix4x4AddTranslation(FIXED matrix[16], Vec3 translation);
-
 IWRAM_CODE Vec3 matrix4x4GetTranslation(const FIXED matrix[16]);
 IWRAM_CODE void matrix4x4SetScale(FIXED matrix[16], FIXED scalar);
 IWRAM_CODE void matrix4x4Scale(FIXED matrix[16], FIXED scalar);
 IWRAM_CODE void matrix4x4SetBasis(FIXED matrix[16],  Vec3 x, Vec3 y, Vec3 z);
 IWRAM_CODE void matrix4x4Transpose(FIXED mat[16]);
-
 IWRAM_CODE bool matrix4x4Inverse(const FIXED *m, FIXED *out);
 
 IWRAM_CODE void matrix4x4createYawPitchRoll(FIXED matrix[16], ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll);
@@ -52,7 +48,6 @@ IWRAM_CODE void matrix4x4Mul(FIXED a[16], const FIXED b[16]);
 IWRAM_CODE void matrix4x4createMul(const FIXED a[16], const FIXED b[16], FIXED result[16]);
 
 void mathInit(void);
-
 
 INLINE FIXED_12 int2fx12(int num) {
     return (ANGLE_FIXED_12) num << 12;
@@ -105,6 +100,5 @@ INLINE FIXED sinFx(ANGLE_FIXED_12 alpha) {
 INLINE FIXED_12 deg2fxangle(int angle_degrees) {
     return fx12mul(ONE_DEGREE, int2fx12(angle_degrees));
 }
-
 
 #endif
