@@ -27,6 +27,8 @@ typedef struct Triangle {
     Vec3 vert[3];
     FIXED centroidZ;
     COLOR color;
+    PolygonShadingType shading;
+
 } Triangle;
 
 #endif

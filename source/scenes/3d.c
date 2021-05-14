@@ -28,7 +28,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 void scene3dInit(void) 
 {     
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(64)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(60.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(10), .y=int2fx(6), .z=int2fx(40)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(64.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -56,7 +56,7 @@ void scene3dUpdate(void)
                 // cubes[i].pos.y = fxmul(sinFx(cubes[i].pos.x + cubes[i].pos.z +  fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
                 // cubes[i].scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
         }
-        cubePool.instances[4].state.pos.y = fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
+        cubePool.instances[4].state.pos.y = fxmul(sinFx(fx12mul(timer.time, deg2fxangle(360) )), int2fx(5) );
         cubePool.instances[4].state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
         cubePool.instances[4].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
         cubePool.instances[4].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
@@ -83,9 +83,8 @@ void scene3dUpdate(void)
 void scene3dDraw(void) 
 {
         drawBefore(&camera);
-        memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
-        drawModelInstancePools(&cubePool, 1, &camera, (ModelDrawLightingData){.type=LIGHT_DIRECTIONAL, .light.directional=&lightDirection, .attenuation=NULL});
-
+        memset32(vid_page, dup16(CLR_TEAL), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
+        drawModelInstancePools(&cubePool, 1, &camera, (ModelDrawLightingData){.type=LIGHT_POINT, .light.directional=&camera.pos, .attenuation=NULL});
 }
 
 
