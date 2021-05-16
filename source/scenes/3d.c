@@ -11,10 +11,15 @@
 #include "../logutils.h"
 #include "../timer.h"
 
+#include "../data/headModel.h"
+
 #define NUM_CUBES 9
 
 EWRAM_DATA static ModelInstance __cubeBuffer[NUM_CUBES];
 static ModelInstancePool cubePool;
+
+EWRAM_DATA static ModelInstance __headBuffer[2];
+static ModelInstancePool headPool;
 
 static Camera camera;
 static Vec3 lightDirection;
@@ -28,7 +33,9 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 void scene3dInit(void) 
 {     
-        camera = cameraNew((Vec3){.x=int2fx(10), .y=int2fx(6), .z=int2fx(40)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(64.f), g_mode);
+        headModelInit(); 
+
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(64.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -37,6 +44,11 @@ void scene3dInit(void)
         lightDirection = vecUnit(lightDirection);
         
         cubePool = modelInstancePoolNew(__cubeBuffer, sizeof __cubeBuffer / sizeof __cubeBuffer[0]);
+        headPool = modelInstancePoolNew(__headBuffer, sizeof __headBuffer / sizeof __headBuffer[0]);
+
+        modelInstanceAdd(&headPool, headModel, &(Vec3){.x=0, .y=0, .z=int2fx(0)}, int2fx(3), 0, 0, 0, SHADING_FLAT_LIGHTING);
+        // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=0, .y=0, .z=int2fx(-10)}, int2fx(), 0, 0, 0, SHADING_WIREFRAME);
+
         int size = 8;
         for (int i = 0; i < NUM_CUBES; ++i) {
              modelCubeNewInstance(&cubePool, (Vec3){.x=int2fx(size * 1.5f * (i % 3) ), .y=int2fx(0), .z=int2fx(size * 1.5f * (i / 3)) }, int2fx(size), SHADING_FLAT_LIGHTING);
@@ -56,10 +68,10 @@ void scene3dUpdate(void)
                 // cubes[i].pos.y = fxmul(sinFx(cubes[i].pos.x + cubes[i].pos.z +  fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
                 // cubes[i].scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
         }
-        cubePool.instances[4].state.pos.y = fxmul(sinFx(fx12mul(timer.time, deg2fxangle(360) )), int2fx(5) );
-        cubePool.instances[4].state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
-        cubePool.instances[4].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
-        cubePool.instances[4].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
+        headPool.instances[0].state.pos.y = fxmul(sinFx(fx12mul(timer.time, deg2fxangle(360) )), int2fx(1) );
+        // headPool.instances[0].state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
+        // headPool.instances[0].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
+        // headPool.instances[0].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
 
         // Calculate the point to lookAt from the heading of the player/camera.
         playerAngle += fx12mul(-int2fx12(key_tri_shoulder()), deg2fxangle(fx12Tofx(timer.deltatime >> 1)));
@@ -75,18 +87,30 @@ void scene3dUpdate(void)
         camera.lookAt = (Vec3){.x = camera.pos.x + playerHeading.x, .y = camera.pos.y + playerHeading.y, .z = camera.pos.z + playerHeading.z};
 
         if (key_held(KEY_START)) {
-                camera.lookAt = (Vec3){.x= cubePool.instances[4].state.pos.x, .y=0, .z=cubePool.instances[4].state.pos.z};
+                camera.lookAt = (Vec3){.x= headPool.instances[0].state.pos.x, .y=headPool.instances[0].state.pos.y, .z=headPool.instances[0].state.pos.z};
         }
 }
 
-
+bool toggle = false;
 void scene3dDraw(void) 
 {
         drawBefore(&camera);
-        memset32(vid_page, dup16(CLR_TEAL), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
-        drawModelInstancePools(&cubePool, 1, &camera, (ModelDrawLightingData){.type=LIGHT_POINT, .light.directional=&camera.pos, .attenuation=NULL});
-}
+        memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
 
+        ModelDrawLightingData lightDataPoint = {.type=LIGHT_POINT, .light.point=&camera.pos, .attenuation=&lightAttenuation100};
+        ModelDrawLightingData lightDataDir = {.type=LIGHT_DIRECTIONAL, .light.directional=&lightDirection, .attenuation=NULL};
+
+        if (key_hit(KEY_SELECT)) {
+                toggle = !toggle;
+        }
+
+        if (!toggle)
+                drawModelInstancePools(&headPool, 1, &camera, lightDataDir);
+
+        else
+                drawModelInstancePools(&headPool, 1, &camera, lightDataPoint);
+
+}
 
 void scene3dStart(void) {
         timerStart(&timer);

@@ -30,7 +30,7 @@ ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity
     return new;
 }
 
-static ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading) 
+ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading) 
 {
     assertion(pool != NULL, "model.c: modelInstanceAdd: pool != NULL");
     assertion(pool->firstAvailable != NULL, "model.c: modelInstanceAdd: pool capacity not exceeded (by pointer)");

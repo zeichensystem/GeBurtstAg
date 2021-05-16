@@ -128,16 +128,21 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 .PHONY: $(BUILD) clean run
 
 #---------------------------------------------------------------------------------
-$(BUILD):
+$(BUILD): 
 	@[ -d $@ ] || mkdir -p $@ 
 	# $(MAKE) -C $(CURDIR)/lutcalc -f Makefile
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+
+models: $(CURDIR)/assets/models/*.obj 
+	python3 $(CURDIR)/tools/obj2model.py
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).gba
 	@rm -f $(CURDIR)/lutcalc/lutcalc
+	@rm -f $(CURDIR)/data/*
 
 run: $(BUILD) Makefile
 	$(MGBA) -2 -l 15 $(OUTPUT).gba

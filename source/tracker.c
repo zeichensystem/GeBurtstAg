@@ -55,7 +55,7 @@ int trackNew(Note *chanOne, Note *chanTwo, u32 sizeOne, u32 sizeTwo)
 }
 
 
-void trackSelect(u32 idx) 
+void trackSelect(s32 idx) 
 {
     assertion(idx <= lastTrackIdx, "tracker.c: trackSelect: idx <= lastTrackIdx");
     currentTrackIdx = idx;

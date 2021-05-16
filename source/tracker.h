@@ -1,6 +1,9 @@
 #ifndef TRACKER_H
 #define TRACKER_H
 
+
+#include <tonc.h>
+
 #define NUM_TRACKS 8 // maximum number of different tracks; only one can be played at a time
 
 #define QUARTER 32 // invariant: minimum is 16 (when QUARTER == 16, the dotted thirty second is 2 + 1 frame)
@@ -36,7 +39,7 @@ int trackNew(Note *chanOne, Note *chanTwo, u32 sizeOne, u32 sizeTwo);
 
 
 void trackerInit(void);
-void trackSelect(u32 idx);
+void trackSelect(s32 idx);
 void trackTick(void);
 void tracksUpdate(void);
 

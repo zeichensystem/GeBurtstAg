@@ -9,7 +9,7 @@
 #include "model.h"
 #include "clipping.h"
 
-#define DRAW_MAX_TRIANGLES 256
+#define DRAW_MAX_TRIANGLES 321
 EWRAM_DATA static RasterTriangle screenTriangles[DRAW_MAX_TRIANGLES]; 
 static int screenTriangleCount = 0;
 
@@ -236,7 +236,6 @@ INLINE void drawTriangleFlatByggmastar(const RasterTriangle *tri)
             right_x += delta_right_x;
         }
         ++y;
-
     }
 }
 
@@ -318,10 +317,11 @@ INLINE void drawTriangleFlatByggmastar(const RasterTriangle *tri)
             
         for (int faceNum = 0; faceNum < instance->state.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
             const Face face = instance->state.mod.faces[faceNum];
+
              // Backface culling (assumes a clockwise winding order):
             const Vec3 a = vecSub(vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[0]]);
             const Vec3 b = vecSub(vertsCamSpace[face.vertexIndex[2]], vertsCamSpace[face.vertexIndex[0]]);
-            const Vec3 triNormal = vecCross(a, b);
+            const Vec3 triNormal = vecCross(b, a);
             const Vec3 camToTri = vertsCamSpace[face.vertexIndex[0]]; // Remember, vertsCamSpace[] is in camera space already, so it doesn't make sense subtract the camera's wolrd position!
             if (vecDot(triNormal, camToTri) <= 0) { // If the angle between camera and normal is not between 90 degs and 270 degs, the face is invisible and to be culled.
                 continue;
@@ -335,11 +335,13 @@ INLINE void drawTriangleFlatByggmastar(const RasterTriangle *tri)
                 continue;
             }
             RasterTriangle screenTri;
+            performanceStart(perfProject);
             for (int i = 0; i < 3; ++i) { // Perspective projection, and conversion of the fixed point numbers to integers.
                 assertion(triVerts[i].z <= -cam->near, "draw.c: drawModelInstances: Perspective division in front of near-plane");
                 vecTransform(cam->perspMat, triVerts + i);
                 screenTri.vert[i] = (RasterPoint){.x=fx2int(triVerts[i].x), .y=fx2int(triVerts[i].y)};   
             }
+            performanceEnd(perfProject);
             // Check if all vertices of the face are to the "outside-side" of a given clipping plane. If so, the face is invisible and we can skip it.
             if (triVerts[0].x < 0 && triVerts[1].x < 0 && triVerts[2].x < 0) { // All vertices are to the left of the left-plane.
                 continue;
@@ -351,9 +353,9 @@ INLINE void drawTriangleFlatByggmastar(const RasterTriangle *tri)
                 continue;
             }
 
-            screenTri.shading = instanceShading;
             FACE_CALC_COLOR();
-    
+            screenTri.shading = instance->state.shading;
+
             screenTri.centroidZ = vertsCamSpace[face.vertexIndex[0]].z; // TODO HACK: That's not the actual centroid (we'd need an expensive division for that), but this is good enough for small faces.
             assertion(screenTriangleCount < DRAW_MAX_TRIANGLES, "draw.c: drawModelInstances: screenTriangleCount < DRAW_MAX_TRIANGLES");
             screenTriangles[screenTriangleCount++] = screenTri;

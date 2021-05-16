@@ -5,8 +5,8 @@
 #include "math.h"
 #include "raster_geometry.h"
 
-#define MAX_MODEL_VERTS 128
-#define MAX_MODEL_FACES 32
+#define MAX_MODEL_VERTS 256
+#define MAX_MODEL_FACES 256
 
 /*
     We want to use object pools to manage our modelInstances, just a thin abstraction on top of static arrays with no dynamic allocations etc. 
@@ -92,6 +92,7 @@ ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity
 void modelInstancePoolReset(ModelInstancePool *pool);
 int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance);
 Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces);
+ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading); 
 ModelInstance *modelCubeNewInstance(ModelInstancePool *pool, Vec3 pos, FIXED scale, PolygonShadingType shading);
 
 #endif
