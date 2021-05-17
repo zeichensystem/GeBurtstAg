@@ -9,12 +9,13 @@
 #include "model.h"
 #include "clipping.h"
 
+#define RASTERPOINT_IN_BOUNDS_M5(vert) (vert.x >= 0 && vert.x < M5_SCALED_W && vert.y >= 0 && vert.y < M5_SCALED_H)
+#define BEHIND_NEAR(vert) (vert.z > -cam->near ) // True if the Vec3 is behind the near plane of the camera (i.e. invisible).
+#define BEYOND_FAR(vert) (vert.z < -cam->far)
+
 #define DRAW_MAX_TRIANGLES 321
 EWRAM_DATA static RasterTriangle screenTriangles[DRAW_MAX_TRIANGLES]; 
 static int screenTriangleCount = 0;
-
-#define RASTERPOINT_IN_BOUNDS_M5(vert) (vert.x >= 0 && vert.x < M5_SCALED_W && vert.y >= 0 && vert.y < M5_SCALED_H)
-#define BEHIND_CAM(vert) (vert.z > -cam->near ) // True if the Vec3 is behind the near plane of the camera (i.e. invisible).
 
 static int perfFill, perfModelProcessing, perfPolygonSort, perfProject;
 
@@ -39,12 +40,24 @@ IWRAM_CODE void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr)
 {
     for (int i = 0; i < num; ++i) {
         Vec3 pointCamSpace = vecTransformed(cam->world2cam, points[i]);
-        if (BEHIND_CAM(pointCamSpace)) {
+        if (BEHIND_NEAR(pointCamSpace) || BEYOND_FAR(pointCamSpace)) { 
             continue;
         }
-        vecTransform(cam->perspMat, &pointCamSpace);
-        RasterPoint rp = {.x = fx2int(pointCamSpace.x), .y=fx2int(pointCamSpace.y)};
-        if (RASTERPOINT_IN_BOUNDS_M5(rp)) {
+ 
+        FIXED const z = -pointCamSpace.z;
+        FIXED pre_divide_x = fxmul(cam->perspFacX, pointCamSpace.x);
+        if (pre_divide_x < -z || pre_divide_x > z ) {// Check if the point is to the left/right of the viewing frustum before dividing (to save unnecessary divisions in those cases).  
+            continue;
+        }
+        FIXED pre_divide_y = fxmul(cam->perspFacY, pointCamSpace.y);
+        if (pre_divide_y < -z|| pre_divide_y > z ) { // Check if the point is to the top/bottom of the viewing frustum. 
+            continue;
+        }
+        RasterPoint rp = {
+            .x=fx2int( fxmul(cam->viewportTransFacX, fxdiv(pre_divide_x, z)) + cam->viewportTransAddX ),
+            .y=fx2int( fxmul(cam->viewportTransFacY, fxdiv(pre_divide_y, z)) + cam->viewportTransAddY )
+        };
+        if (RASTERPOINT_IN_BOUNDS_M5(rp)) { 
             m5_plot(rp.x, rp.y, clr);
         }
     }
@@ -301,6 +314,7 @@ INLINE void drawTriangleFlatByggmastar(const RasterTriangle *tri)
         FIXED instanceRotMat[16];
         matrix4x4createYawPitchRoll(instanceRotMat, instance->state.yaw, instance->state.pitch, instance->state.roll);
         Vec3 vertsCamSpace[MAX_MODEL_VERTS];
+        RasterPoint vertsProjected[MAX_MODEL_VERTS];
         for (int i = 0; i < instance->state.mod.numVerts; ++i) {
             // Model space to world space:
             vertsCamSpace[i] = vecScaled(instance->state.mod.verts[i], instance->state.scale);
@@ -310,55 +324,60 @@ INLINE void drawTriangleFlatByggmastar(const RasterTriangle *tri)
             vertsCamSpace[i].y += instance->state.pos.y;
             vertsCamSpace[i].z += instance->state.pos.z;
             vecTransform(cam->world2cam, vertsCamSpace + i); // And finally, we're in camera space.
+            if (BEHIND_NEAR(vertsCamSpace[i]) || BEYOND_FAR(vertsCamSpace[i])) {  
+                vertsProjected[i].x = RASTER_POINT_NEAR_FAR_CULL;
+                vertsProjected[i].y = RASTER_POINT_NEAR_FAR_CULL;
+            } else {
+                // Perspective projection and screen space transform; we do it manually instead of just calling vecTransformed(cam->perspMat, vertsCamSpace[i]) for performance (for my test case with 414 triangles: 20.2 ms vs 24.4 ms)
+                const FIXED z = vertsCamSpace[i].z;
+                // vertsProjected[i].x =  ( ((cam->viewportTransFacX * (cam->perspFacX * vertsCamSpace[i].x / -z)) >> FIX_SHIFT) + cam->viewportTransAddX) >> FIX_SHIFT; (not much faster)
+                vertsProjected[i].x = fx2int( fxmul(cam->viewportTransFacX, fxdiv(fxmul(cam->perspFacX, vertsCamSpace[i].x), -z) ) + cam->viewportTransAddX );
+                vertsProjected[i].y = fx2int( fxmul(cam->viewportTransFacY, fxdiv(fxmul(cam->perspFacY, vertsCamSpace[i].y), -z) ) + cam->viewportTransAddY );
+            }
         }
-
+ 
         // Calculate lightDir and attenuation (which don't depend on the faces, only on the instance) so we don't have to re-compute them redundantly in the inner loop over the faces.
         INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION();
             
         for (int faceNum = 0; faceNum < instance->state.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
             const Face face = instance->state.mod.faces[faceNum];
 
-             // Backface culling (assumes a clockwise winding order):
+             // Backface culling (assumes a counter-clockwise winding order):
             const Vec3 a = vecSub(vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[0]]);
             const Vec3 b = vecSub(vertsCamSpace[face.vertexIndex[2]], vertsCamSpace[face.vertexIndex[0]]);
             const Vec3 triNormal = vecCross(b, a);
-            const Vec3 camToTri = vertsCamSpace[face.vertexIndex[0]]; // Remember, vertsCamSpace[] is in camera space already, so it doesn't make sense subtract the camera's wolrd position!
+            // const Vec3 triNormal = vecTransformed(instanceRotMat, face.normal);
+            const Vec3 camToTri = vertsCamSpace[face.vertexIndex[2]]; // Remember, vertsCamSpace[] is in camera space already, so it doesn't make sense subtract the camera's wolrd position!
             if (vecDot(triNormal, camToTri) <= 0) { // If the angle between camera and normal is not between 90 degs and 270 degs, the face is invisible and to be culled.
                 continue;
             }
 
-            Vec3 triVerts[3] = {vertsCamSpace[face.vertexIndex[0]], vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[2]]};
-            // TODO: Proper 3d clipping against the near plane (so far, triangles are discared even if only one vertex is behind the near plane).
-            if (BEHIND_CAM(triVerts[0]) || BEHIND_CAM(triVerts[1]) || BEHIND_CAM(triVerts[2])) {  // Triangle extends behind the near clipping plane -> reject the whole thing. 
-                continue; 
-            } else if (triVerts[0].z < -cam->far || triVerts[1].z < -cam->far || triVerts[1].z < -cam->far) { // Triangle extends beyond the far-plane -> reject the whole thing.
-                continue;
+            RasterTriangle screenTri; 
+            for (int i = 0; i < 3; ++i) {
+                screenTri.vert[i] = vertsProjected[face.vertexIndex[i]];
+                if (screenTri.vert[i].x == RASTER_POINT_NEAR_FAR_CULL && screenTri.vert[i].y == RASTER_POINT_NEAR_FAR_CULL) { // If the face is partly behind the near or far plane, cull the whole (we don't bother with clipping).
+                    goto skipFace;
+                } 
             }
-            RasterTriangle screenTri;
-            performanceStart(perfProject);
-            for (int i = 0; i < 3; ++i) { // Perspective projection, and conversion of the fixed point numbers to integers.
-                assertion(triVerts[i].z <= -cam->near, "draw.c: drawModelInstances: Perspective division in front of near-plane");
-                vecTransform(cam->perspMat, triVerts + i);
-                screenTri.vert[i] = (RasterPoint){.x=fx2int(triVerts[i].x), .y=fx2int(triVerts[i].y)};   
-            }
-            performanceEnd(perfProject);
+               
             // Check if all vertices of the face are to the "outside-side" of a given clipping plane. If so, the face is invisible and we can skip it.
-            if (triVerts[0].x < 0 && triVerts[1].x < 0 && triVerts[2].x < 0) { // All vertices are to the left of the left-plane.
+            if (screenTri.vert[0].x < 0 && screenTri.vert[1].x < 0 && screenTri.vert[2].x < 0) { // All vertices are to the left of the left-plane.
                 continue;
-            } else if (triVerts[0].x >= cam->canvasWidth && triVerts[1].x >= cam->canvasWidth && triVerts[2].x >= cam->canvasWidth ) { // All vertices are to the right of the right-plane.
+            } else if (screenTri.vert[0].x >= M5_SCALED_W && screenTri.vert[1].x >= M5_SCALED_W && screenTri.vert[2].x >= M5_SCALED_W ) { // All vertices are to the right of the right-plane.
                 continue;
-            } else if (triVerts[0].y < 0 && triVerts[1].y < 0 && triVerts[2].y < 0) { // All vertices are to the top of the top-plane.
+            } else if (screenTri.vert[0].y < 0 && screenTri.vert[1].y < 0 && screenTri.vert[2].y < 0) { // All vertices are to the top of the top-plane.
                 continue;
-            } else if (triVerts[0].y >= cam->canvasHeight && triVerts[1].y >= cam->canvasHeight && triVerts[2].y >= cam->canvasHeight) { // All vertices are to the bottom of the bottom-plane.
+            } else if (screenTri.vert[0].y >= M5_SCALED_H && screenTri.vert[1].y >= M5_SCALED_H && screenTri.vert[2].y >= M5_SCALED_H) { // All vertices are to the bottom of the bottom-plane.
                 continue;
             }
 
             FACE_CALC_COLOR();
             screenTri.shading = instance->state.shading;
-
             screenTri.centroidZ = vertsCamSpace[face.vertexIndex[0]].z; // TODO HACK: That's not the actual centroid (we'd need an expensive division for that), but this is good enough for small faces.
             assertion(screenTriangleCount < DRAW_MAX_TRIANGLES, "draw.c: drawModelInstances: screenTriangleCount < DRAW_MAX_TRIANGLES");
             screenTriangles[screenTriangleCount++] = screenTri;
+            
+            skipFace:;
         }
     }
 }

@@ -11,7 +11,7 @@
 
 typedef struct Vec3 {
      FIXED x, y, z;
-} Vec3; 
+} ALIGN4 Vec3; 
 
 typedef s32 FIXED_12;
 typedef FIXED_12 ANGLE_FIXED_12;

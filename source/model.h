@@ -60,7 +60,7 @@ typedef struct ModelDrawLightingData {
     } light;
     const LightAttenuationParams *attenuation; // Attenuation only for point lights.
 
-} ModelDrawLightingData;
+} ALIGN4 ModelDrawLightingData;
 
 
 typedef struct ModelInstance { // Different Instances share their vertex/face data, which saves us memory. 
@@ -75,9 +75,9 @@ typedef struct ModelInstance { // Different Instances share their vertex/face da
             PolygonShadingType shading;
             FIXED camSpaceDepth;
         }; 
-    } state;
+    } ALIGN4 state;
 
-} ModelInstance;
+} ALIGN4 ModelInstance;
 
 typedef struct ModelInstancePool {
     int POOL_CAPACITY; 

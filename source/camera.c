@@ -129,6 +129,18 @@ void cameraComputePerspectiveMatrix(Camera *cam)
         0, 0, int2fx(1), 0,
         0, 0, 0, int2fx(1)
     };
-    matrix4x4Mul(viewport2image, persp);
-    memcpy(cam->perspMat, viewport2image, sizeof(persp));
+
+    memcpy(cam->perspMat, persp, sizeof(persp));
+    memcpy(cam->viewport2imageMat, viewport2image, sizeof(viewport2image));
+
+    // We can ignore fxdiv(right + left, right - left) in the symmetric case where right == -left and top == -right.
+    //  We use the following variables to project/transform without matrices (more efficient, less convenient).
+    cam->perspFacX = persp[0];
+    cam->perspFacY = persp[5];
+
+    cam->viewportTransFacX = viewport2image[0];
+    cam->viewportTransAddX = viewport2image[3];
+
+    cam->viewportTransFacY = viewport2image[5];
+    cam->viewportTransAddY = viewport2image[7];
 }

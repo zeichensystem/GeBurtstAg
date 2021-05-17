@@ -36,7 +36,7 @@ ASFLAGS := -x assembler-with-cpp
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-mthumb -mthumb-interwork # -marm -mthumb-interwork
+ARCH	:=	-mthumb -mthumb-interwork #-marm 
 
 CWARNINGS   :=	-Wall -Wextra -Wpedantic -Wshadow -Wundef -Wunused-parameter -Wmisleading-indentation \
 				-Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference -Wswitch-default \

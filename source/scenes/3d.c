@@ -12,6 +12,8 @@
 #include "../timer.h"
 
 #include "../data/headModel.h"
+#include "../data/suzanneModel.h"
+
 
 #define NUM_CUBES 9
 
@@ -34,6 +36,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 void scene3dInit(void) 
 {     
         headModelInit(); 
+        suzanneModelInit();
 
         camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(64.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
@@ -46,8 +49,8 @@ void scene3dInit(void)
         cubePool = modelInstancePoolNew(__cubeBuffer, sizeof __cubeBuffer / sizeof __cubeBuffer[0]);
         headPool = modelInstancePoolNew(__headBuffer, sizeof __headBuffer / sizeof __headBuffer[0]);
 
-        modelInstanceAdd(&headPool, headModel, &(Vec3){.x=0, .y=0, .z=int2fx(0)}, int2fx(3), 0, 0, 0, SHADING_FLAT_LIGHTING);
-        // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=0, .y=0, .z=int2fx(-10)}, int2fx(), 0, 0, 0, SHADING_WIREFRAME);
+        modelInstanceAdd(&headPool, suzanneModel, &(Vec3){.x=0, .y=0, .z=int2fx(0)}, int2fx(3), 0, 0, 0, SHADING_WIREFRAME);
+        modelInstanceAdd(&headPool, suzanneModel, &(Vec3){.x=int2fx(6), .y=0, .z=0}, int2fx(3), 0, 0, 0, SHADING_WIREFRAME);
 
         int size = 8;
         for (int i = 0; i < NUM_CUBES; ++i) {

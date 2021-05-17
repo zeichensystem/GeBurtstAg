@@ -100,25 +100,25 @@ void modelInit(void)
     };
     memcpy(cubeModelVerts, verts, sizeof(cubeModelVerts));
 
-    Face trigs[12] = {
+    Face trigs[12] = { // Counter-clockwise winding order.
         // front
-        {.vertexIndex = {0, 1, 2}, .color = CLR_CYAN, .normal={0, 0, int2fx(1)}, .type=TriangleFace}, 
-        {.vertexIndex = {2, 3, 0}, .color = CLR_CYAN, .normal={0, 0, int2fx(1)}, .type=TriangleFace},
+        {.vertexIndex = {0, 3, 2}, .color = CLR_CYAN, .normal={0, 0, int2fx(1)}, .type=TriangleFace}, 
+        {.vertexIndex = {2, 1, 0}, .color = CLR_CYAN, .normal={0, 0, int2fx(1)}, .type=TriangleFace},
         // back
-        {.vertexIndex = {4, 7, 6}, .color = CLR_RED, .normal={0, 0, int2fx(-1)}, .type=TriangleFace},  
-        {.vertexIndex = {6, 5, 4}, .color = CLR_RED, .normal={0, 0, int2fx(-1)}, .type=TriangleFace},  
+        {.vertexIndex = {6, 7, 4}, .color = CLR_RED, .normal={0, 0, int2fx(-1)}, .type=TriangleFace},  
+        {.vertexIndex = {4, 5, 6}, .color = CLR_RED, .normal={0, 0, int2fx(-1)}, .type=TriangleFace},  
         // right
-        {.vertexIndex = {3, 2, 6}, .color = CLR_BLUE, .normal={int2fx(1), 0, 0}, .type=TriangleFace},
-        {.vertexIndex = {6, 7, 3}, .color = CLR_BLUE, .normal={int2fx(1), 0, 0}, .type=TriangleFace},  
+        {.vertexIndex = {3, 7, 6}, .color = CLR_BLUE, .normal={int2fx(1), 0, 0}, .type=TriangleFace},
+        {.vertexIndex = {6, 2, 3}, .color = CLR_BLUE, .normal={int2fx(1), 0, 0}, .type=TriangleFace},  
         // left
-        {.vertexIndex = {4, 5, 1}, .color = CLR_MAG, .normal={int2fx(-1), 0, 0}, .type=TriangleFace},
-        {.vertexIndex = {1, 0, 4}, .color = CLR_MAG, .normal={int2fx(-1), 0, 0}, .type=TriangleFace},
+        {.vertexIndex = {1, 5, 4}, .color = CLR_MAG, .normal={int2fx(-1), 0, 0}, .type=TriangleFace},
+        {.vertexIndex = {4, 0, 1}, .color = CLR_MAG, .normal={int2fx(-1), 0, 0}, .type=TriangleFace},
         // bottom
-        {.vertexIndex = {0, 3, 7}, .color = CLR_GREEN, .normal={0, int2fx(-1), 0}, .type=TriangleFace}, 
-        {.vertexIndex = {7, 4, 0}, .color = CLR_GREEN, .normal={0, int2fx(-1), 0}, .type=TriangleFace},
+        {.vertexIndex = {7, 3, 0}, .color = CLR_GREEN, .normal={0, int2fx(-1), 0}, .type=TriangleFace}, 
+        {.vertexIndex = {0, 4, 7}, .color = CLR_GREEN, .normal={0, int2fx(-1), 0}, .type=TriangleFace},
         // top
-        {.vertexIndex = {1, 5, 6}, .color = CLR_YELLOW, .normal={0, int2fx(1), 0}, .type=TriangleFace},
-        {.vertexIndex = {6, 2, 1}, .color = CLR_YELLOW, .normal={0, int2fx(1), 0}, .type=TriangleFace},
+        {.vertexIndex = {6, 5, 1}, .color = CLR_YELLOW, .normal={0, int2fx(1), 0}, .type=TriangleFace},
+        {.vertexIndex = {1, 2, 6}, .color = CLR_YELLOW, .normal={0, int2fx(1), 0}, .type=TriangleFace},
     };
     
     memcpy(cubeModelFaces, trigs, 12 * sizeof(Face));

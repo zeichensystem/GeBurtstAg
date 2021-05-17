@@ -6,6 +6,8 @@
 
 typedef struct Camera {
     FIXED perspMat[16];
+    FIXED viewport2imageMat[16];
+    FIXED perspFacX, perspFacY, viewportTransFacX, viewportTransFacY, viewportTransAddX, viewportTransAddY;
     FIXED cam2world[16]; 
     FIXED world2cam[16];
     Vec3 pos;
@@ -16,7 +18,7 @@ typedef struct Camera {
     FIXED viewportWidth, viewportHeight;
     FIXED aspect;
     FIXED fov, near, far;
-} Camera;
+} ALIGN4 Camera;
 
 Camera cameraNew(Vec3 pos, FIXED fov, FIXED near, FIXED far, int mode);
 IWRAM_CODE void cameraComputePerspectiveMatrix(Camera *cam);

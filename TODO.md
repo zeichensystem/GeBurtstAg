@@ -8,13 +8,12 @@
 - [ ] Affine texture mapping (cf. fatmap.txt)
 
 
-## Implementation details and Bugfixes
-- [ ] Simplify perspective calculations                    x
-- [ ] Don't recalculate vertex projections for each face!  x
+## Implementation details and Bugfixes 
 - [ ] Put models into ROM (const)                          x
+- [ ] Backface culling winding order/normal problem        x
 - [ ] Broadphase with bounding spheres for model-instances
-- [ ] Proper near-plane clipping 
 - [ ] Use division LUTs for triangle-filling (integers) and for perspective divides (fixed point)
+- [ ] Proper near-plane clipping 
 - [ ] Option to calculate the actual centroid of a face for sorting
 - [ ] Better handling of lookAt singularity (looking completely down/up)
 
@@ -24,4 +23,5 @@
 - [x] Fix ugly rasterisation bugs
 - [x] Faster triangle filling (refer to fatmap.txt)
 - [x] Basic .obj support
-
+- [x] Simplify perspective calculations                    
+- [x] Don't recalculate vertex projections for each face! 

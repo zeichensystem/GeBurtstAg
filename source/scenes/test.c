@@ -12,7 +12,7 @@
 
 
 #define NUM_CUBES 9
-#define NUM_POINTS 128
+#define NUM_POINTS 200
 
 EWRAM_DATA static ModelInstance __cubesBuffer[NUM_CUBES];
 static ModelInstancePool cubePool;
@@ -27,7 +27,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 
 void sceneTestInit(void) {     
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(142.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(M_PI / 180. * 43), int2fx(1), int2fx(256), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -65,7 +65,6 @@ void sceneTestUpdate(void)
         cubePool.instances[4].state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
         cubePool.instances[4].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
         cubePool.instances[4].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
-        // cubes[4].scale = int2fx(18);
 
         camera.lookAt = (Vec3){cubePool.instances[4].state.pos.x, 0, cubePool.instances[4].state.pos.z};
         camera.pos.x = cubePool.instances[4].state.pos.x + fxmul(cosFx(fx12mul(timer.time, deg2fxangle(160))), int2fx(64)); 
