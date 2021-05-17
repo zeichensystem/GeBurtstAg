@@ -5,10 +5,13 @@
 - [ ] Camera paths (splines?)
 - [ ] Mode switching
 - [ ] Particle systems
+- [ ] Handle .obj colours on import (so far, we just set all colours to a default one).
 - [ ] Affine texture mapping (cf. fatmap.txt)
 
 
+
 ## Implementation details and Bugfixes 
+- [ ] Better sorting (allow for pre-sorted geometry, )
 - [ ] Put models into ROM (const)                          x
 - [ ] Backface culling winding order/normal problem        x
 - [ ] Broadphase with bounding spheres for model-instances
@@ -25,3 +28,7 @@
 - [x] Basic .obj support
 - [x] Simplify perspective calculations                    
 - [x] Don't recalculate vertex projections for each face! 
+
+
+- add drawModelInstances 
+- add sort heuristics (buffer?)

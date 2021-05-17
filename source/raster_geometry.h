@@ -26,6 +26,7 @@ typedef struct RasterTriangle {
     FIXED centroidZ;
     COLOR color;
     PolygonShadingType shading;
+    struct RasterTriangle* next; // For our ordering table in draw.c
 } ALIGN4 RasterTriangle;
 
 typedef struct Triangle {

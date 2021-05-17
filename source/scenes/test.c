@@ -27,6 +27,8 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 
 void sceneTestInit(void) {     
+        setDispScaleM5Scaled();
+
         camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(M_PI / 180. * 43), int2fx(1), int2fx(256), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
@@ -95,5 +97,6 @@ void sceneTestPause(void) {
 }
 
 void sceneTestResume(void) {
+        setDispScaleM5Scaled();
         timerResume(&timer);
 }

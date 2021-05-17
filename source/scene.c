@@ -32,7 +32,7 @@ void scenesInit(void)
     for (int i = 0; i < SCENE_NUM; ++i) {
         scenes[i].init();
     }
-    currentSceneID = 0; // The ID of the initial scene
+    currentSceneID = 1; // The ID of the initial scene
 }
 
 void scenesDispatchUpdate(void) 

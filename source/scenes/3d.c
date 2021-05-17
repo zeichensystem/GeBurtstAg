@@ -16,16 +16,18 @@
 
 
 #define NUM_CUBES 9
+#define NUM_CUBES_SQRT 3
 
 EWRAM_DATA static ModelInstance __cubeBuffer[NUM_CUBES];
 static ModelInstancePool cubePool;
 
-EWRAM_DATA static ModelInstance __headBuffer[2];
+EWRAM_DATA static ModelInstance __headBuffer[3];
 static ModelInstancePool headPool;
 
 static Camera camera;
 static Vec3 lightDirection;
 static Timer timer;
+static ModelInstance *weirdHead, *weirdHead2;
 
 static Vec3 playerHeading;
 static ANGLE_FIXED_12 playerAngle;
@@ -33,12 +35,20 @@ static ANGLE_FIXED_12 playerAngle;
 static int perfDrawID, perfProjectID, perfSortID;
 
 
+static void videoModeInit(void) {
+        g_mode = DCNT_MODE5;
+        REG_DISPCNT = g_mode | DCNT_BG2;
+        setDispScaleM5Scaled();
+}
+
 void scene3dInit(void) 
 {     
-        headModelInit(); 
-        suzanneModelInit();
+        videoModeInit();
 
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(64.f), g_mode);
+        headModelInit(); 
+        // suzanneModelInit();
+
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(42.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -48,33 +58,52 @@ void scene3dInit(void)
         
         cubePool = modelInstancePoolNew(__cubeBuffer, sizeof __cubeBuffer / sizeof __cubeBuffer[0]);
         headPool = modelInstancePoolNew(__headBuffer, sizeof __headBuffer / sizeof __headBuffer[0]);
-
-        modelInstanceAdd(&headPool, suzanneModel, &(Vec3){.x=0, .y=0, .z=int2fx(0)}, int2fx(3), 0, 0, 0, SHADING_WIREFRAME);
-        modelInstanceAdd(&headPool, suzanneModel, &(Vec3){.x=int2fx(6), .y=0, .z=0}, int2fx(3), 0, 0, 0, SHADING_WIREFRAME);
-
-        int size = 8;
+        
+        // Grid of cubes:
+        FIXED size = int2fx(4);
+        FIXED padding = size >> 1;
+        FIXED x_start =  -fxdiv(fxmul(int2fx(NUM_CUBES_SQRT), size) + fxmul(int2fx(NUM_CUBES_SQRT - 1), padding), int2fx(2)); 
+        FIXED z = 0;
+        Vec3 cubesCenter;
         for (int i = 0; i < NUM_CUBES; ++i) {
-             modelCubeNewInstance(&cubePool, (Vec3){.x=int2fx(size * 1.5f * (i % 3) ), .y=int2fx(0), .z=int2fx(size * 1.5f * (i / 3)) }, int2fx(size), SHADING_FLAT_LIGHTING);
+             if (i && i % (NUM_CUBES_SQRT) == 0) {
+                     z -= size + padding;
+             }
+             FIXED x = x_start + (i % NUM_CUBES_SQRT) * (size + padding);
+             if (i == (NUM_CUBES / 2)  ) { // Assumes NUM_CUBES is uneven (we want to leave a "hole" in the center of the grid).
+                cubesCenter.x = x;
+                cubesCenter.z = z;
+                cubesCenter.y = 0;
+             } else {
+                modelCubeNewInstance(&cubePool, (Vec3){.x=x , .y=int2fx(0), .z=z }, size, SHADING_FLAT_LIGHTING);
+             }
         }
+
+        weirdHead = modelInstanceAdd(&headPool, headModel, &cubesCenter, 620, 0, deg2fxangle(-62), 0, SHADING_FLAT_LIGHTING);
+        weirdHead2 = modelInstanceAdd(&headPool, headModel, &cubesCenter, 620, 0, deg2fxangle(62), deg2fxangle(180), SHADING_FLAT_LIGHTING);
+
+        // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=int2fx(6), .y=0, .z=0}, int2fx(1), 0, 0, 0, SHADING_FLAT_LIGHTING);
+        // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=int2fx(-6), .y=0, .z=0}, int2fx(1), 0, 0, 0, SHADING_FLAT_LIGHTING);
 }        
 
 
 void scene3dUpdate(void) 
 {
         timerTick(&timer);
-
         for (int i = 0; i < NUM_CUBES; ++i) {
-                // FIXED_12 dir = i % 2 ? int2fx12(-1) : int2fx12(1);
-                // cubes[i].yaw -= fx12mul(dir, fx12mul(timer.deltatime, deg2fxangle(80)) );
-                // cubes[i].pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
-                // cubes[i].roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
-                // cubes[i].pos.y = fxmul(sinFx(cubes[i].pos.x + cubes[i].pos.z +  fx12mul(timer.time, deg2fxangle(360)  )), int2fx(5));
-                // cubes[i].scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
+                FIXED_12 dir = i % 2 ? int2fx12(-1) : int2fx12(1);
+                cubePool.instances[i].state.yaw -= fx12mul(dir, fx12mul(timer.deltatime, deg2fxangle(80)) );
+                cubePool.instances[i].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
+                cubePool.instances[i].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
+                // cubePool.instances[i].state.pos.y = fxmul(sinFx(cubePool.instances[i].state.pos.x * 2 + cubePool.instances[i].state.pos.z* 2 +  fx12mul(timer.time, deg2fxangle(250)  )), int2fx(3));
+                // cubePool.instances[i].state.scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
         }
-        headPool.instances[0].state.pos.y = fxmul(sinFx(fx12mul(timer.time, deg2fxangle(360) )), int2fx(1) );
-        // headPool.instances[0].state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(100)) );
-        // headPool.instances[0].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
-        // headPool.instances[0].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
+        weirdHead->state.yaw -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(80)) );
+        weirdHead2->state.yaw += fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(80)) );
+
+        weirdHead->state.pos.y = fxmul(sinFx(fx12mul(timer.time, deg2fxangle(320))), int2fx(1)) - int2fx(4);
+        weirdHead2->state.pos.y = fxmul(cosFx(fx12mul(timer.time, deg2fxangle(320))), int2fx(1)) + int2fx(4);
+
 
         // Calculate the point to lookAt from the heading of the player/camera.
         playerAngle += fx12mul(-int2fx12(key_tri_shoulder()), deg2fxangle(fx12Tofx(timer.deltatime >> 1)));
@@ -90,7 +119,7 @@ void scene3dUpdate(void)
         camera.lookAt = (Vec3){.x = camera.pos.x + playerHeading.x, .y = camera.pos.y + playerHeading.y, .z = camera.pos.z + playerHeading.z};
 
         if (key_held(KEY_START)) {
-                camera.lookAt = (Vec3){.x= headPool.instances[0].state.pos.x, .y=headPool.instances[0].state.pos.y, .z=headPool.instances[0].state.pos.z};
+                camera.lookAt = (Vec3){.x= headPool.instances[0].state.pos.x, .y=0, .z=headPool.instances[0].state.pos.z};
         }
 }
 
@@ -107,11 +136,12 @@ void scene3dDraw(void)
                 toggle = !toggle;
         }
 
+        ModelInstancePool pools[2] = {headPool, cubePool};
         if (!toggle)
-                drawModelInstancePools(&headPool, 1, &camera, lightDataDir);
+                drawModelInstancePools(pools, 2, &camera, lightDataDir);
 
         else
-                drawModelInstancePools(&headPool, 1, &camera, lightDataPoint);
+                drawModelInstancePools(pools, 2, &camera, lightDataPoint);
 
 }
 
@@ -124,5 +154,6 @@ void scene3dPause(void) {
 }
 
 void scene3dResume(void) {
+       videoModeInit();
         timerResume(&timer);
 }

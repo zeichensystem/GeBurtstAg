@@ -7,7 +7,6 @@
 #include "timer.h"
 #include "scene.h"
 #include "model.h"
-#include "tracker.h"
 
 #define SHOW_DEBUG
 
@@ -32,6 +31,8 @@ int main(void)
 {
     srand(1997); 
     irq_init(NULL);
+    irq_add(II_VBLANK, NULL);
+
     // irq_add(II_HBLANK, wave);
     // irq_add(II_VBLANK, waveUpdate);
 
@@ -40,33 +41,19 @@ int main(void)
     mathInit();
     timerInit();
     modelInit();
-    trackerInit();
     scenesInit();
-    
-    /* 
-        Scaling using the affine background capabilities of the GBA. 
-        We use Mode 5 (160x128) with an "internal/logical" resolution of 160x100 scaled to fit the 
-        240x160 (factor 1.5) screen of the GBA (with 5px letterboxes on the top and bottom). 
-    */
-    FIXED threeHalfInv = 170; // 170 is about (3/2)^-1 in .8 fixed point.
-    AFF_SRC_EX asx= {
-        .alpha=0,
-        .sx=threeHalfInv,
-        .sy=threeHalfInv,
-        .scr_x=0,
-        .scr_y=5, // Vertical letterboxing.
-        .tex_x=0,
-        .tex_y=0 };
-    BG_AFFINE bgaff;
-    bg_rotscale_ex(&bgaff, &asx);
-    REG_BG_AFFINE[2]= bgaff;
 
-    Timer showPerfTimer = timerNew(int2fx12(4), TIMER_REGULAR); // We don't want to print the performance data every frame, so we use a timer. 
+    Timer showPerfTimer = timerNew(int2fx12(2), TIMER_REGULAR); // We don't want to print the performance data every frame, so we use a timer to gather it in intervals. 
     timerStart(&showPerfTimer);
 
     while (1) {
         key_poll();
         scenesDispatchUpdate();
+
+        if (g_mode != DCNT_MODE5 && g_mode != DCNT_MODE4) {
+            VBlankIntrWait();
+        }
+
         scenesDispatchDraw();
 
         int fps = getFps();
@@ -75,8 +62,10 @@ int main(void)
         snprintf(dbg, sizeof(dbg),  "FPS: %d", fps);
         m5_puts(8, 8, dbg, CLR_LIME);
         #endif
-
-        vid_flip();
+        
+        if (g_mode == DCNT_MODE5 || g_mode == DCNT_MODE4) {
+            vid_flip();
+        }
 
         if (showPerfTimer.done || !g_frameCount) { 
             performancePrintAll();

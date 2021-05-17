@@ -73,9 +73,9 @@ void assertion(bool cond, const char* name)
 static FIXED prevFps = 0;
 
 int getFps(void) {
-    const FIXED point_9 = 230; // smoothing
+    const FIXED smoothing = 205; // 0,8
     FIXED currentFps =  fx12Tofx(fx12div(int2fx12(1), g_timer.deltatime));
-    FIXED fps = fxmul(prevFps, point_9) + fxmul(currentFps, int2fx(1) - point_9);
+    FIXED fps = fxmul(prevFps, smoothing) + fxmul(currentFps, int2fx(1) - smoothing);
     prevFps = fps;
     return fx2int(fps);
 } 
