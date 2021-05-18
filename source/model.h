@@ -47,6 +47,8 @@ static const LightAttenuationParams lightAttenuation100 = {.linear=12, .quadrati
 static const LightAttenuationParams lightAttenuation160 = {.linear=7, .quadratic=1};
 static const LightAttenuationParams lightAttenuation200 = {.linear=6, .quadratic=0};
 
+extern Model cubeModel;
+
 typedef enum LightType {
     LIGHT_DIRECTIONAL, 
     LIGHT_POINT
@@ -70,7 +72,7 @@ typedef struct ModelInstance { // Different Instances share their vertex/face da
         struct { // Only need those when the instance is not empty. 
             Model mod;
             Vec3 pos;
-            FIXED scale;
+            Vec3 scale;
             ANGLE_FIXED_12 yaw, pitch, roll;
             PolygonShadingType shading;
             FIXED camSpaceDepth;
@@ -86,13 +88,13 @@ typedef struct ModelInstancePool {
     ModelInstance *firstAvailable;
 } ModelInstancePool;
 
-
 void modelInit(void);
+Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces);
 ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity);
 void modelInstancePoolReset(ModelInstancePool *pool);
 int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance);
-Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces);
-ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading); 
-ModelInstance *modelCubeNewInstance(ModelInstancePool *pool, Vec3 pos, FIXED scale, PolygonShadingType shading);
+ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, const Vec3 *scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading);
+ModelInstance* modelInstanceAddVanilla(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, PolygonShadingType shading);
+
 
 #endif

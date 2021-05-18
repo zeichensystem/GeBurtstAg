@@ -40,7 +40,7 @@ void sceneTestInit(void) {
         cubePool = modelInstancePoolNew(__cubesBuffer, sizeof __cubesBuffer / sizeof __cubesBuffer[0]);
         int size = 12;
         for (int i = 0; i < NUM_CUBES; ++i) {
-                modelCubeNewInstance(&cubePool, (Vec3){.x=int2fx(size * (i % 3) ), .y=int2fx(0), .z=int2fx(size * (i / 3)) }, int2fx(size), SHADING_FLAT_LIGHTING);
+                modelInstanceAddVanilla(&cubePool, cubeModel, &(Vec3){.x=int2fx(size * (i % 3)), .y=int2fx(0), .z=int2fx(size * (i / 3))}, int2fx(size), SHADING_FLAT_LIGHTING );
         }
 
         for (int i = 0; i < NUM_POINTS; ++i) {  // Initialise stars.

@@ -62,7 +62,7 @@ void scene3dInit(void)
         // Grid of cubes:
         FIXED size = int2fx(4);
         FIXED padding = size >> 1;
-        FIXED x_start =  -fxdiv(fxmul(int2fx(NUM_CUBES_SQRT), size) + fxmul(int2fx(NUM_CUBES_SQRT - 1), padding), int2fx(2)); 
+        FIXED x_start =  -fxdiv(fxmul(int2fx(NUM_CUBES_SQRT), size) , int2fx(2)); 
         FIXED z = 0;
         Vec3 cubesCenter;
         for (int i = 0; i < NUM_CUBES; ++i) {
@@ -75,13 +75,12 @@ void scene3dInit(void)
                 cubesCenter.z = z;
                 cubesCenter.y = 0;
              } else {
-                modelCubeNewInstance(&cubePool, (Vec3){.x=x , .y=int2fx(0), .z=z }, size, SHADING_FLAT_LIGHTING);
+                modelInstanceAdd(&cubePool, cubeModel, &(Vec3){.x=x, .y=int2fx(0), .z=z}, &(Vec3){.x=size, .y=int2fx(6), .z=int2fx(1)}, 0, 0, 0, SHADING_FLAT_LIGHTING);
              }
-        }
-
-        weirdHead = modelInstanceAdd(&headPool, headModel, &cubesCenter, 620, 0, deg2fxangle(-62), 0, SHADING_FLAT_LIGHTING);
-        weirdHead2 = modelInstanceAdd(&headPool, headModel, &cubesCenter, 620, 0, deg2fxangle(62), deg2fxangle(180), SHADING_FLAT_LIGHTING);
-
+        } 
+        Vec3 headScale = {.x=int2fx(2),.y=int2fx(2), .z=int2fx(2)};
+        weirdHead = modelInstanceAdd(&headPool, headModel, &cubesCenter, &headScale, 0, deg2fxangle(-62), 0, SHADING_FLAT_LIGHTING);
+        weirdHead2 = modelInstanceAdd(&headPool, headModel, &cubesCenter, &headScale, 0, deg2fxangle(62), deg2fxangle(180), SHADING_FLAT_LIGHTING);
         // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=int2fx(6), .y=0, .z=0}, int2fx(1), 0, 0, 0, SHADING_FLAT_LIGHTING);
         // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=int2fx(-6), .y=0, .z=0}, int2fx(1), 0, 0, 0, SHADING_FLAT_LIGHTING);
 }        
@@ -93,8 +92,8 @@ void scene3dUpdate(void)
         for (int i = 0; i < NUM_CUBES; ++i) {
                 FIXED_12 dir = i % 2 ? int2fx12(-1) : int2fx12(1);
                 cubePool.instances[i].state.yaw -= fx12mul(dir, fx12mul(timer.deltatime, deg2fxangle(80)) );
-                cubePool.instances[i].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
-                cubePool.instances[i].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
+                // cubePool.instances[i].state.pitch -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(120)) );
+                // cubePool.instances[i].state.roll -= fx12mul(int2fx12(1), fx12mul(timer.deltatime, deg2fxangle(110)) );
                 // cubePool.instances[i].state.pos.y = fxmul(sinFx(cubePool.instances[i].state.pos.x * 2 + cubePool.instances[i].state.pos.z* 2 +  fx12mul(timer.time, deg2fxangle(250)  )), int2fx(3));
                 // cubePool.instances[i].state.scale = int2fx(8) +  fxmul(sinFx( fx12mul(timer.time, deg2fxangle(360)  )), int2fx(2));
         }

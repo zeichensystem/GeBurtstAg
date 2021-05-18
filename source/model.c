@@ -12,7 +12,7 @@
 
 static Vec3 cubeModelVerts[8];
 static Face cubeModelFaces[12];
-static Model cubeModel;
+Model cubeModel;
 
 void modelInstancePoolReset(ModelInstancePool *pool) 
 {
@@ -30,7 +30,7 @@ ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity
     return new;
 }
 
-ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading) 
+ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec3 *pos, const Vec3 *scale, ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll, PolygonShadingType shading)
 {
     assertion(pool != NULL, "model.c: modelInstanceAdd: pool != NULL");
     assertion(pool->firstAvailable != NULL, "model.c: modelInstanceAdd: pool capacity not exceeded (by pointer)");
@@ -43,15 +43,24 @@ ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec
     new->isEmpty = false;
     new->state.mod = model;
     assertion(pos != NULL, "model.c: modelInstancePoolAdd: pos != NULL");
+    assertion(scale != NULL, "model.c: modelInstancePoolAdd: scale != NULL");
+
     new->state.pos = *pos;
     new->state.yaw = yaw;
     new->state.pitch = pitch;
     new->state.roll = roll;
-    new->state.scale = scale;
+    new->state.scale.x = scale->x; new->state.scale.y = scale->y; new->state.scale.z = scale->z;
     new->state.shading = shading;
 
     pool->instanceCount++;
     return new;
+}
+
+/* Creates an instance with uniform scaling, and 0 rotation for convenience. */
+ModelInstance* modelInstanceAddVanilla(ModelInstancePool *pool,  Model model, const Vec3 *pos, FIXED scale, PolygonShadingType shading) 
+{ 
+    Vec3 uniformScale = {.x = scale, .y=scale, .z=scale};
+    return modelInstanceAdd(pool, model, pos, &uniformScale, 0, 0, 0, shading);
 }
 
 int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance) 
@@ -66,12 +75,6 @@ int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance)
 
     pool->instanceCount -= 1;
     return pool->instanceCount;
-}
-
-ModelInstance *modelCubeNewInstance(ModelInstancePool *pool, Vec3 pos, FIXED scale, PolygonShadingType shading) 
-{
-    assertion(pool->instanceCount < pool->POOL_CAPACITY, "model.c: modelCubeNewInstance: pool not full");
-    return modelInstanceAdd(pool, cubeModel, &pos, scale, 0, 0, 0, shading);
 }
 
 

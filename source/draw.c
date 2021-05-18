@@ -364,7 +364,9 @@ INLINE void otInsert(RasterTriangle *t) {
         RasterPoint vertsProjected[MAX_MODEL_VERTS];
         for (int i = 0; i < instance->state.mod.numVerts; ++i) {
             // Model space to world space:
-            vertsCamSpace[i] = vecScaled(instance->state.mod.verts[i], instance->state.scale);
+            vertsCamSpace[i].x = fxmul(instance->state.mod.verts[i].x, instance->state.scale.x); 
+            vertsCamSpace[i].y = fxmul(instance->state.mod.verts[i].y, instance->state.scale.y);
+            vertsCamSpace[i].z = fxmul(instance->state.mod.verts[i].z, instance->state.scale.z);
             vecTransform(instanceRotMat, vertsCamSpace + i );
             // We translate manually so that instanceRotMat stays as is (so we can rotate our normals with the instanceRotMat in model space to calculate lighting):
             vertsCamSpace[i].x += instance->state.pos.x;
