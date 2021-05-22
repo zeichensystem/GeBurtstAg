@@ -1,5 +1,4 @@
 import math
-from os import name
 import pathlib
 import re
 import textwrap

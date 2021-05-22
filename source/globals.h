@@ -8,8 +8,8 @@
 #include "draw.h"
 #include "timer.h"
 
-#define M5_SCALED_W (160)
-#define M5_SCALED_H (100)
+#define M5_SCALED_W 160
+#define M5_SCALED_H 100
 
 extern int g_mode;
 extern Timer g_timer;

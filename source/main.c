@@ -32,7 +32,6 @@ int main(void)
     srand(1997); 
     irq_init(NULL);
     irq_add(II_VBLANK, NULL);
-
     // irq_add(II_HBLANK, wave);
     // irq_add(II_VBLANK, waveUpdate);
 
@@ -47,25 +46,8 @@ int main(void)
     timerStart(&showPerfTimer);
 
     while (1) {
-        key_poll();
         scenesDispatchUpdate();
-
-        if (g_mode != DCNT_MODE5 && g_mode != DCNT_MODE4) {
-            VBlankIntrWait();
-        }
-
         scenesDispatchDraw();
-
-        int fps = getFps();
-        #ifdef SHOW_DEBUG
-        char dbg[64];
-        snprintf(dbg, sizeof(dbg),  "FPS: %d", fps);
-        m5_puts(8, 8, dbg, CLR_LIME);
-        #endif
-        
-        if (g_mode == DCNT_MODE5 || g_mode == DCNT_MODE4) {
-            vid_flip();
-        }
 
         if (showPerfTimer.done || !g_frameCount) { 
             performancePrintAll();

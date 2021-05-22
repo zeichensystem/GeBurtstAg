@@ -46,16 +46,36 @@ void panic(const char* message)
         mgba_printf("Error: %s", message);
     else
         mgba_printf("Unnamed error");
-
-    // give user a visible error message, too
-    // m5_fill(CLR_RED);
-    memset32(vid_page, dup16(CLR_RED), (160 * 100)/2);
-
+ 
     int w = g_mode == DCNT_MODE5 ? M5_SCALED_W : SCREEN_WIDTH;
     int h = g_mode == DCNT_MODE5 ? M5_SCALED_H : SCREEN_HEIGHT;
     char msg[256] = "Sorry ;w;";
-    m5_puts(w / 2 - 8 * (strlen(msg) / 2), h / 2 - 8, msg, CLR_WHITE);
-    vid_flip();
+
+    COLOR frontPal[3] = {CLR_YELLOW, CLR_RED, CLR_WHITE};
+
+    switch (g_mode) {
+    case DCNT_MODE5:
+        setDispScaleM5Scaled();
+        memset32(vid_page, dup16(CLR_RED), (160 * 100)/2);
+        m5_puts(w / 2 - 8 * (strlen(msg) / 2), h / 2 - 8, msg, CLR_WHITE);
+        vid_flip();
+        break;
+    case DCNT_MODE4:
+        resetDispScale();
+        setM4Pal(frontPal, sizeof frontPal / sizeof frontPal[0]);
+        m4_fill(1);
+        m4_puts(w / 2 - 8 * (strlen(msg) / 2), h / 2 - 8, msg, 2);
+        vid_flip();
+        break;
+    case DCNT_MODE3:
+        resetDispScale();
+        m3_fill(CLR_RED);
+        m3_puts(w / 2 - 8 * (strlen(msg) / 2), h / 2 - 8, msg, CLR_WHITE);
+        break;
+    default:
+        mgba_printf("panic: no valid mode selected, can't display.");
+        break;
+    }
     Halt();
     VBlankIntrDelay(60 * 16);
 }

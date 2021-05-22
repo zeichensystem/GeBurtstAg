@@ -1,6 +1,7 @@
 #include <tonc.h>
-#include <math.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 #include "test.h"
 #include "../globals.h"
@@ -12,7 +13,6 @@
 #include "../timer.h"
 
 #include "../data/headModel.h"
-#include "../data/suzanneModel.h"
 
 
 #define NUM_CUBES 9
@@ -35,20 +35,13 @@ static ANGLE_FIXED_12 playerAngle;
 static int perfDrawID, perfProjectID, perfSortID;
 
 
-static void videoModeInit(void) {
-        g_mode = DCNT_MODE5;
-        REG_DISPCNT = g_mode | DCNT_BG2;
-        setDispScaleM5Scaled();
-}
 
 void scene3dInit(void) 
 {     
-        videoModeInit();
-
         headModelInit(); 
         // suzanneModelInit();
 
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(M_PI / 180. * 43), float2fx(1.f), float2fx(42.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(PI_FLT / 180. * 43), float2fx(1.f), float2fx(42.f), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -81,8 +74,6 @@ void scene3dInit(void)
         Vec3 headScale = {.x=int2fx(2),.y=int2fx(2), .z=int2fx(2)};
         weirdHead = modelInstanceAdd(&headPool, headModel, &cubesCenter, &headScale, 0, deg2fxangle(-62), 0, SHADING_FLAT_LIGHTING);
         weirdHead2 = modelInstanceAdd(&headPool, headModel, &cubesCenter, &headScale, 0, deg2fxangle(62), deg2fxangle(180), SHADING_FLAT_LIGHTING);
-        // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=int2fx(6), .y=0, .z=0}, int2fx(1), 0, 0, 0, SHADING_FLAT_LIGHTING);
-        // modelInstanceAdd(&headPool, headModel, &(Vec3){.x=int2fx(-6), .y=0, .z=0}, int2fx(1), 0, 0, 0, SHADING_FLAT_LIGHTING);
 }        
 
 
@@ -105,9 +96,9 @@ void scene3dUpdate(void)
 
 
         // Calculate the point to lookAt from the heading of the player/camera.
-        playerAngle += fx12mul(-int2fx12(key_tri_shoulder()), deg2fxangle(fx12Tofx(timer.deltatime >> 1)));
+        playerAngle += (-key_tri_shoulder() * (timer.deltatime >>1));
         FIXED rotmat[16];
-        matrix4x4createRotY(rotmat, playerAngle);
+        matrix4x4createRotY(rotmat, fx12ToInt(playerAngle * TAU)  );
         playerHeading = vecTransformed(rotmat, (Vec3){.x=0, .y=0, .z = int2fx(-1)});
         Vec3 right = vecCross(playerHeading, (Vec3){0, int2fx(1), 0});
         FIXED velX = fxmul(int2fx(key_tri_horz()), fx12Tofx(timer.deltatime << 5));
@@ -144,7 +135,10 @@ void scene3dDraw(void)
 
 }
 
-void scene3dStart(void) {
+void scene3dStart(void) 
+{
+        videoM5ScaledInit();
+        setDispScaleM5Scaled();
         timerStart(&timer);
 }
 
@@ -153,6 +147,6 @@ void scene3dPause(void) {
 }
 
 void scene3dResume(void) {
-       videoModeInit();
+        videoM5ScaledInit();
         timerResume(&timer);
 }

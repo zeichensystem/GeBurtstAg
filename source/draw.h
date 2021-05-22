@@ -9,6 +9,12 @@
 void drawInit(void);
 void resetDispScale(void);
 void setDispScaleM5Scaled(void);
+void setM4Pal(COLOR *pal, int n);
+void m5ScaledFill(COLOR clr);
+void videoM5ScaledInit(void);
+void videoM4Init(void); 
+
+
 
 /* drawBefore is assumed to be called every frame before the other draw functions are invoked. */
 void drawBefore(Camera *cam);

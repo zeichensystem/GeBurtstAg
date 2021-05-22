@@ -102,7 +102,6 @@ void modelInit(void)
         {.x = half, .y = -half, .z = -half},
     };
     memcpy(cubeModelVerts, verts, sizeof(cubeModelVerts));
-
     Face trigs[12] = { // Counter-clockwise winding order.
         // front
         {.vertexIndex = {0, 3, 2}, .color = CLR_CYAN, .normal={0, 0, int2fx(1)}, .type=TriangleFace}, 
@@ -123,7 +122,6 @@ void modelInit(void)
         {.vertexIndex = {6, 5, 1}, .color = CLR_YELLOW, .normal={0, int2fx(1), 0}, .type=TriangleFace},
         {.vertexIndex = {1, 2, 6}, .color = CLR_YELLOW, .normal={0, int2fx(1), 0}, .type=TriangleFace},
     };
-    
     memcpy(cubeModelFaces, trigs, 12 * sizeof(Face));
     cubeModel = modelNew(cubeModelVerts, cubeModelFaces, 8, 12);
 }

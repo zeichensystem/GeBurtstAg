@@ -4,6 +4,7 @@
 #include <tonc.h>
 // #include "math_divlut.h"
 
+#define PI_FLT 3.14159265f
 #define TAU 0xFFFF
 #define PI 0x8000 // round(TAU / 2)
 #define ONE_DEGREE  0xB6
@@ -84,9 +85,10 @@ INLINE FIXED cosFx(ANGLE_FIXED_12 alpha) {
     return fx12Tofx(lu_cos(ABS(alpha) & 0xffff) );
 }
 
-INLINE FIXED sinFx(ANGLE_FIXED_12 alpha) {
+INLINE FIXED sinFx(FIXED_12 alpha) {
     return alpha < 0 ? -fx12Tofx(lu_sin(ABS(alpha) & 0xffff) ) : fx12Tofx(lu_sin(alpha & 0xffff));
 }
+
 
 // INLINE FIXED fxDivFast(FIXED num, FIXED denom) { // IMPORTANT: has limited range, up to RECIPROCAL_MAX_RANGE; should only be used for perspective divide
 //     panic("fxdivfast is deprecated");
@@ -97,8 +99,13 @@ INLINE FIXED sinFx(ANGLE_FIXED_12 alpha) {
 //     return denom < 0 ? -u_result: u_result; // don't assume denom is positive
 // }
 
+INLINE FIXED_12 freq(FIXED_12 hz) {
+    return fx12mul(hz, TAU);
+}
+
+
 INLINE FIXED_12 deg2fxangle(int angle_degrees) {
-    return fx12mul(ONE_DEGREE, int2fx12(angle_degrees));
+    return (ONE_DEGREE * (angle_degrees));
 }
 
 #endif

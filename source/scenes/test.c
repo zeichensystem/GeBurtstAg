@@ -1,6 +1,6 @@
 #include <tonc.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 
 #include "test.h"
 #include "../globals.h"
@@ -9,6 +9,7 @@
 #include "../model.h"
 #include "../logutils.h"
 #include "../timer.h"
+#include "../math.h"
 
 
 #define NUM_CUBES 9
@@ -27,9 +28,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 
 void sceneTestInit(void) {     
-        setDispScaleM5Scaled();
-
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(M_PI / 180. * 43), int2fx(1), int2fx(256), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(PI_FLT / 180. * 43), int2fx(1), int2fx(256), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -88,7 +87,9 @@ void sceneTestDraw(void)
 }
 
 
-void sceneTestStart(void) {
+void sceneTestStart(void) 
+{
+        videoM5ScaledInit();
         timerStart(&timer);
 }
 
@@ -96,7 +97,9 @@ void sceneTestPause(void) {
         timerStop(&timer);
 }
 
-void sceneTestResume(void) {
+void sceneTestResume(void) 
+{
+        videoM5ScaledInit();
         setDispScaleM5Scaled();
         timerResume(&timer);
 }

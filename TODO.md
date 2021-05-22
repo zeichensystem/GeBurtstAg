@@ -1,21 +1,20 @@
 # TODO
 
 ## Important Features
-- [ ] Integration of 'apex audio' for .mod support
+- [ ] Integration of 'apex audio' for .mod support       
 - [ ] Camera paths (splines?)
-- [ ] Mode switching
+- [ ] Animations (and "native" wireframe model support (only edges, not faces; maybe even 2d))
 - [ ] Particle systems
 - [ ] Handle .obj colours on import (so far, we just set all colours to a default one).
 - [ ] Affine texture mapping (cf. fatmap.txt)
 
-
-
 ## Implementation details and Bugfixes 
-- [ ] Better sorting (allow for pre-sorted geometry, )
+- [ ] use sin_lut instead of fxSin for better accuracy maybe. 
 - [ ] Put models into ROM (const)                          x
 - [ ] Backface culling winding order/normal problem        x
-- [ ] Broadphase with bounding spheres for model-instances
+- [ ] Broadphase with bounding spheres for model-instances (and option for models with fewer faces which get activated if their distance to the camera is large).
 - [ ] Use division LUTs for triangle-filling (integers) and for perspective divides (fixed point)
+- [ ] Option for pre-sorted geometry (in case the camera moves only backward/forwards etc. it would be more efficient).
 - [ ] Proper near-plane clipping 
 - [ ] Option to calculate the actual centroid of a face for sorting
 - [ ] Better handling of lookAt singularity (looking completely down/up)
@@ -28,7 +27,5 @@
 - [x] Basic .obj support
 - [x] Simplify perspective calculations                    
 - [x] Don't recalculate vertex projections for each face! 
-
-
-- add drawModelInstances 
-- add sort heuristics (buffer?)
+- [x] Better polygon sorting (Ordering table.)
+- [x] Mode switching

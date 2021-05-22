@@ -29,7 +29,8 @@ static RasterTriangle *orderingTable[OT_SIZE];
 
 static int perfFill, perfModelProcessing, perfTotal, perfProject;
 
-void setDispScaleM5Scaled() {
+void setDispScaleM5Scaled(void) 
+{
       /* 
         Scaling using the affine background capabilities of the GBA. 
         We use Mode 5 (160x128) with an "internal/logical" resolution of 160x100 scaled to fit the 
@@ -49,9 +50,48 @@ void setDispScaleM5Scaled() {
     REG_BG_AFFINE[2]= bgaff;
 }
 
-void resetDispScale(void) {
+
+void resetDispScale(void) 
+{
     BG_AFFINE bgaff;
+    bg_aff_identity(&bgaff);
     REG_BG_AFFINE[2]= bgaff;
+}
+
+void setM4Pal(COLOR *pal, int n) 
+{
+    u16 *dst= pal_bg_mem;
+    for(int i=0; i < n; ++i)
+        dst[i]= pal[i];
+}
+
+static void updateMode(void) 
+{
+    // cf. https://gist.github.com/zeichensystem/0729edcddf8f24db14e5b1b4ef4c0c3f
+    if (vid_page == vid_mem_front) { // If the front page (vid_mem_front) is the current write-page, we have to indicate that the back page is the displayed page by setting DCNT_PAGE.
+        REG_DISPCNT = g_mode | DCNT_BG2 | DCNT_PAGE;  
+    } else { // The current write page is the back page, so we display the front page (which happens by default if we don't set DCNT_PAGE).
+        REG_DISPCNT = g_mode | DCNT_BG2;
+    }
+}
+
+void videoM5ScaledInit(void) 
+{
+    g_mode = DCNT_MODE5;
+    updateMode();
+    setDispScaleM5Scaled();
+}
+
+void videoM4Init(void) 
+{
+    g_mode = DCNT_MODE4;
+    updateMode();
+    resetDispScale();
+}
+
+void m5ScaledFill(COLOR clr) 
+{
+    memset32(vid_page, dup16(clr), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
 }
 
 void drawInit(void) 
@@ -357,7 +397,6 @@ INLINE void otInsert(RasterTriangle *t) {
             continue;
         }
         // TODO: Insert bounding-sphere culling here.
-
         FIXED instanceRotMat[16];
         matrix4x4createYawPitchRoll(instanceRotMat, instance->state.yaw, instance->state.pitch, instance->state.roll);
         Vec3 vertsCamSpace[MAX_MODEL_VERTS];
@@ -390,9 +429,6 @@ INLINE void otInsert(RasterTriangle *t) {
             
         for (int faceNum = 0; faceNum < instance->state.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
             const Face face = instance->state.mod.faces[faceNum];
-
-            
-
 
              // Backface culling (assumes a counter-clockwise winding order):
             const Vec3 a = vecSub(vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[0]]);
@@ -483,6 +519,7 @@ IWRAM_CODE void drawModelInstancePools(ModelInstancePool *pools, int numPools, C
     // tri.vert[1] = (RasterPoint){.x=60, .y=100};
     // tri.vert[2] = (RasterPoint){.x=0, .y=100};
     // drawTriangleFlatByggmastar(&tri);
+    
     performanceEnd(perfTotal);
     char dbg[64];
     snprintf(dbg, sizeof(dbg),  "tris: %d", screenTriangleCount);
