@@ -5,7 +5,7 @@
 #include <tonc_video.h>
 
 #include "camera.h"
-#include "draw.h"
+#include "render/draw.h"
 #include "timer.h"
 
 #define M5_SCALED_W 160

@@ -7,7 +7,7 @@
 #include "../globals.h"
 #include "../math.h"
 #include "../camera.h"
-#include "../draw.h"
+#include "../render/draw.h"
 #include "../model.h"
 #include "../logutils.h"
 #include "../timer.h"
@@ -138,7 +138,6 @@ void scene3dDraw(void)
 void scene3dStart(void) 
 {
         videoM5ScaledInit();
-        setDispScaleM5Scaled();
         timerStart(&timer);
 }
 

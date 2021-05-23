@@ -24,7 +24,7 @@ MGBA := /Applications/mGBA.app/Contents/MacOS/mGBA # for "make run"
 #---------------------------------------------------------------------------------
 TARGET		:= $(notdir $(CURDIR))
 BUILD		:= build
-SOURCES		:= source source/scenes asm data # lol
+SOURCES		:= source source/scenes source/render asm data
 INCLUDES	:= include $(DEVKITPRO)/libtonc/include/
 DATA		:= 
 MUSIC		:=
@@ -46,7 +46,7 @@ CWARNINGS   :=	-Wall -Wextra -Wpedantic -Wshadow -Wundef -Wunused-parameter -Wmi
 
 
 ifeq ($(DEBUG),1)
-	CFLAGS := $(CWARNINGS) -gdwarf-2 -Wall -mcpu=arm7tdmi -mtune=arm7tdmi $(ARCH)
+	CFLAGS := $(CWARNINGS) -gdwarf-2 -mcpu=arm7tdmi -mtune=arm7tdmi $(ARCH)
 else
 	CFLAGS	:= $(CWARNINGS) -O2 -flto -mcpu=arm7tdmi -mtune=arm7tdmi $(ARCH)
 endif

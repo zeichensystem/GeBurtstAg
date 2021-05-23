@@ -5,7 +5,7 @@
 #include <tonc.h>
 
 #include "logutils.h"
-#include "draw.h"
+#include "render/draw.h"
 #include "globals.h"
 #include "timer.h"
 

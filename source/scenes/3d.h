@@ -9,5 +9,4 @@ void scene3dResume(void);
 void scene3dUpdate(void);
 void scene3dDraw(void);
 
-
 #endif

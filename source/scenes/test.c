@@ -5,7 +5,7 @@
 #include "test.h"
 #include "../globals.h"
 #include "../camera.h"
-#include "../draw.h"
+#include "../render/draw.h"
 #include "../model.h"
 #include "../logutils.h"
 #include "../timer.h"
@@ -100,6 +100,5 @@ void sceneTestPause(void) {
 void sceneTestResume(void) 
 {
         videoM5ScaledInit();
-        setDispScaleM5Scaled();
         timerResume(&timer);
 }

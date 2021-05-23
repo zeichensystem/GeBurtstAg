@@ -3,10 +3,10 @@
 #include <tonc.h>
 
 #include "clipping.h"
-#include "globals.h"
-#include "math.h"
-#include "logutils.h"
-#include "model.h"
+#include "../globals.h"
+#include "../math.h"
+#include "../logutils.h"
+#include "../model.h"
 
 #define RASTERPOINT_IN_BOUNDS_M5(vert) (vert.x >= 0 && vert.x < M5_SCALED_W && vert.y >= 0 && vert.y < M5_SCALED_H)
 

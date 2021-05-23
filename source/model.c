@@ -7,7 +7,7 @@
 #include "camera.h"
 #include "logutils.h"
 #include "timer.h"
-#include "draw.h"
+#include "render/draw.h"
 #include "globals.h"
 
 static Vec3 cubeModelVerts[8];
