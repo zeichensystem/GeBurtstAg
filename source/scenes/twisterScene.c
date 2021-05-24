@@ -5,8 +5,10 @@
 
 #include "twisterScene.h"
 #include "../globals.h"
+#include "../commondefs.h"
 #include "../logutils.h"
 #include "../timer.h"
+#include "../render/draw.h"
 
 static Timer timer;
 
@@ -63,7 +65,7 @@ void twisterSceneInit(void)
 
 }        
 
-void twisterSceneUpdate(void) 
+IWRAM_CODE_ARM void twisterSceneUpdate(void) 
 {
     timerTick(&timer);
 
@@ -102,7 +104,7 @@ INLINE void m4_hline_nonorm(int x1, int y, int x2, u32 clr)
 }
 
 
-static void renderTwisters(Twister **tw, int num) 
+IWRAM_CODE_ARM static void renderTwisters(Twister **tw, int num) 
 {
     for (int i = 1; i < num; ++i) {
         for (int j = i; j > 0 && tw[j]->z > tw[j - 1]->z ; --j) { // We sort descending (big z values here mean farther in the background, i.e. those twisters are drawn first).
@@ -169,9 +171,9 @@ static void renderTwisters(Twister **tw, int num)
     }
 }
 
-void twisterSceneDraw(void) 
+IWRAM_CODE_ARM void twisterSceneDraw(void) 
 {
-    memset32(vid_page, quad8(CLRIDX_BLACK), 15 * M4_WIDTH/4);
+    memset32(vid_page, quad8(CLRIDX_BLACK), 15 * M4_WIDTH/4); // TODO: REMOVE ME (only here for debugging so the fps text does not overdraw).
     memset32(vid_page + letterboxTop * M4_WIDTH / 2, quad8(CLRIDX_PASTEL_BLUE), (letterboxBottom - letterboxTop) * M4_WIDTH/4);
     renderTwisters(twistPtrs, MAX_RENDER_TWISTERS);
 }

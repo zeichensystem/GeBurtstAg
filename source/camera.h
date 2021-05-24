@@ -4,6 +4,9 @@
 #include "math.h"
 #include "raster_geometry.h"
 
+// 43 degrees converted to radians (float2fx(PI_FLT / 180. * 43)) and .8 fixed point.
+#define CAMERA_VERTICAL_FOV_43_DEG 192
+
 typedef struct Camera {
     FIXED perspMat[16];
     FIXED viewport2imageMat[16];
@@ -21,7 +24,7 @@ typedef struct Camera {
 } ALIGN4 Camera;
 
 Camera cameraNew(Vec3 pos, FIXED fov, FIXED near, FIXED far, int mode);
-IWRAM_CODE void cameraComputePerspectiveMatrix(Camera *cam);
-IWRAM_CODE void cameraComputeWorldToCamSpace(Camera *cam);
+IWRAM_CODE_ARM void cameraComputePerspectiveMatrix(Camera *cam);
+IWRAM_CODE_ARM void cameraComputeWorldToCamSpace(Camera *cam);
 
 #endif

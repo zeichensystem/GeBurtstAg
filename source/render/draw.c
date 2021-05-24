@@ -3,6 +3,7 @@
 #include <tonc.h>
 
 #include "../globals.h"
+#include "../commondefs.h"
 #include "../math.h"
 #include "../logutils.h"
 #include "../model.h"
@@ -108,13 +109,13 @@ void drawInit(void)
 }
 
 
-IWRAM_CODE void drawBefore(Camera *cam) 
+IWRAM_CODE_ARM void drawBefore(Camera *cam) 
 { 
     cameraComputeWorldToCamSpace(cam);
 }
 
 
-IWRAM_CODE void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr) 
+IWRAM_CODE_ARM void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR clr) 
 {
     for (int i = 0; i < num; ++i) {
         Vec3 pointCamSpace = vecTransformed(cam->world2cam, points[i]);
@@ -224,7 +225,7 @@ INLINE void otInsert(RasterTriangle *t)
     Performs model to camera space transformations, perspective projection, and shading/lighting calculations.
     Calculates the screen-space triangles which can be drawn later. We put them into the ordering table, so we don't have to sort them. 
 */ 
- IWRAM_CODE static void modelInstancesPrepareDraw(Camera* cam, ModelInstance *instances, int numInstances, ModelDrawLightingData lightDat) 
+IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance *instances, int numInstances, ModelDrawLightingData lightDat) 
 { 
     for (int instanceNum = 0; instanceNum < numInstances; ++instanceNum) {
         ModelInstance *instance = instances + instanceNum;
@@ -316,7 +317,7 @@ static int triangleDepthCmp(const void *a, const void *b)
         return triA->centroidZ - triB->centroidZ; // Smaller/"more negative" z values mean the triangle is farther away from the camera.
 }
 
-IWRAM_CODE void drawModelInstancePools(ModelInstancePool *pools, int numPools, Camera *cam, ModelDrawLightingData lightDat) 
+IWRAM_CODE_ARM void drawModelInstancePools(ModelInstancePool *pools, int numPools, Camera *cam, ModelDrawLightingData lightDat) 
 {
 
     performanceStart(perfTotal);
@@ -346,6 +347,12 @@ IWRAM_CODE void drawModelInstancePools(ModelInstancePool *pools, int numPools, C
        }
     }
     skipOT:;
+    
+    performanceEnd(perfTotal);
+    char dbg[64];
+    snprintf(dbg, sizeof(dbg),  "tris: %d", screenTriangleCount);
+    m5_puts(8, 24, dbg, CLR_FUCHSIA);
+}
 
     // RasterTriangle tri;
     // tri.color = CLR_WHITE;
@@ -353,9 +360,3 @@ IWRAM_CODE void drawModelInstancePools(ModelInstancePool *pools, int numPools, C
     // tri.vert[1] = (RasterPoint){.x=60, .y=100};
     // tri.vert[2] = (RasterPoint){.x=0, .y=100};
     // drawTriangleFlatByggmastar(&tri);
-    
-    performanceEnd(perfTotal);
-    char dbg[64];
-    snprintf(dbg, sizeof(dbg),  "tris: %d", screenTriangleCount);
-    m5_puts(8, 24, dbg, CLR_FUCHSIA);
-}

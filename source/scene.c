@@ -28,21 +28,23 @@ static Scene sceneNew(const char* name, void (*init)(void), void (*start)(void),
 
 #include "scenes/cubespaceScene.h"
 #include "scenes/testbedScene.h"
+#include "scenes/benchmarkScene.h"
 #include "scenes/twisterScene.h"
 
-#define SCENE_NUM 3
+#define SCENE_NUM 4
 static Scene scenes[SCENE_NUM];
 
 void scenesInit(void) 
 {
     scenes[0] = sceneNew("cubespaceScene", cubespaceSceneInit, cubespaceSceneStart, cubespaceScenePause, cubespaceSceneResume, cubespaceSceneUpdate, cubespaceSceneDraw);
     scenes[1] = sceneNew("testbedScene", testbedSceneInit, testbedSceneStart, testbedScenePause, testbedSceneResume, testbedSceneUpdate, testbedSceneDraw);
-    scenes[2] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
+    scenes[2] = sceneNew("benchmarkScene", benchmarkSceneInit, benchmarkSceneStart, benchmarkScenePause, benchmarkSceneResume, benchmarkSceneUpdate, benchmarkSceneDraw);
+    scenes[3] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
 
     for (int i = 0; i < SCENE_NUM; ++i) {
         scenes[i].init();
     }
-    currentSceneID = 1; // The ID of the initial scene
+    currentSceneID = 2; // The ID of the initial scene
 }
 
 // !CODEGEN_END   

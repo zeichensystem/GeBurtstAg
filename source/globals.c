@@ -1,5 +1,4 @@
 #include "globals.h"
-#include "scene.h"
 
 int g_mode = DCNT_MODE5;
 

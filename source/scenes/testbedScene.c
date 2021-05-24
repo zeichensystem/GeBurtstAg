@@ -41,7 +41,7 @@ void testbedSceneInit(void)
         headModelInit(); 
         // suzanneModelInit();
 
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, float2fx(PI_FLT / 180. * 43), float2fx(1.f), float2fx(42.f), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, CAMERA_VERTICAL_FOV_43_DEG, int2fx(1), int2fx(42), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");

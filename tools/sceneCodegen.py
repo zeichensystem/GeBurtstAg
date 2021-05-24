@@ -44,11 +44,13 @@ def generate_template(name, mode=None):
 
     implTemplate = textwrap.dedent(f"""
     #include <tonc.h>
-
+    
+    #include "{name_scene}.h"
     #include "../scene.h"
+    #include "../globals.h"
     #include "../timer.h"
     #include "../render/draw.h"
-    #include "{name_scene}.h"
+    
 
     static Timer timer;
 

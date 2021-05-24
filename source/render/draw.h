@@ -13,7 +13,8 @@ void resetDispScale(void);
 void videoM5ScaledInit(void);
 void setDispScaleM5Scaled(void);
 void m5ScaledFill(COLOR clr);
-// Mode 5 utils
+
+// Mode 4 utils
 void videoM4Init(void); 
 void setM4Pal(COLOR *pal, int n);
 

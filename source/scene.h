@@ -4,12 +4,11 @@
 
 #define SCENE_NAME_MAX_LEN 64
 
-typedef enum SceneID {CUBESPACESCENE=0, TESTBEDSCENE, TWISTERSCENE, } SceneID;
+typedef enum SceneID {CUBESPACESCENE=0, TESTBEDSCENE, BENCHMARKSCENE, TWISTERSCENE, } SceneID;
 
 typedef struct Scene {
     char name[SCENE_NAME_MAX_LEN];
     bool hasStarted;
-
     void (*init)(void); // Load the scene in init (set up actions such as initilising Models, arrays, etc.)
     void (*start)(void); // Called before the scene is first entered (there might be am indefinite delay between init and start, therefore it may be of importance)
     void (*pause)(void); // Called before the scene is paused

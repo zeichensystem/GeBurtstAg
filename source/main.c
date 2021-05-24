@@ -7,6 +7,7 @@
 #include "timer.h"
 #include "scene.h"
 #include "model.h"
+#include "render/draw.h"
 
 static FIXED_12 g_wave_time;
 static FIXED g_wave_amp;

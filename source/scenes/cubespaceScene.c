@@ -28,7 +28,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 
 void cubespaceSceneInit(void) {     
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(PI_FLT / 180. * 43), int2fx(1), int2fx(256), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, CAMERA_VERTICAL_FOV_43_DEG, int2fx(1), int2fx(256), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");

@@ -2,7 +2,8 @@
 #define MATH_H
 
 #include <tonc.h>
-// #include "math_divlut.h"
+
+#include "commondefs.h"
 
 #define PI_FLT 3.14159265f
 #define TAU 0xFFFF
@@ -18,35 +19,35 @@ typedef s32 FIXED_12;
 typedef FIXED_12 ANGLE_FIXED_12;
 
 
-IWRAM_CODE Vec3 vecScaled(Vec3 vec, FIXED factor);
-IWRAM_CODE void vecScale(Vec3 *vec, FIXED factor);
+IWRAM_CODE_ARM Vec3 vecScaled(Vec3 vec, FIXED factor);
+IWRAM_CODE_ARM void vecScale(Vec3 *vec, FIXED factor);
 
-IWRAM_CODE Vec3 vecAdd(Vec3 a, Vec3 b);
-IWRAM_CODE Vec3 vecSub(Vec3 a, Vec3 b);
-IWRAM_CODE Vec3 vecCross(Vec3 a, Vec3 b);
-IWRAM_CODE FIXED vecDot(Vec3 a, Vec3 b);
-IWRAM_CODE Vec3 vecUnit(Vec3 a);
-IWRAM_CODE FIXED vecMag(Vec3 a);
+IWRAM_CODE_ARM Vec3 vecAdd(Vec3 a, Vec3 b);
+IWRAM_CODE_ARM Vec3 vecSub(Vec3 a, Vec3 b);
+IWRAM_CODE_ARM Vec3 vecCross(Vec3 a, Vec3 b);
+IWRAM_CODE_ARM FIXED vecDot(Vec3 a, Vec3 b);
+IWRAM_CODE_ARM Vec3 vecUnit(Vec3 a);
+IWRAM_CODE_ARM FIXED vecMag(Vec3 a);
 
-IWRAM_CODE Vec3 vecTransformed(const FIXED matrix[16], Vec3 vec);
-IWRAM_CODE void vecTransform(const FIXED matrix[16], Vec3 *vec);
+IWRAM_CODE_ARM Vec3 vecTransformed(const FIXED matrix[16], Vec3 vec);
+IWRAM_CODE_ARM void vecTransform(const FIXED matrix[16], Vec3 *vec);
 
-IWRAM_CODE void matrix4x4setIdentity(FIXED matrix[16]);
-IWRAM_CODE void matrix4x4SetTranslation(FIXED matrix[16], Vec3 translation);
-IWRAM_CODE void matrix4x4AddTranslation(FIXED matrix[16], Vec3 translation);
-IWRAM_CODE Vec3 matrix4x4GetTranslation(const FIXED matrix[16]);
-IWRAM_CODE void matrix4x4SetScale(FIXED matrix[16], FIXED scalar);
-IWRAM_CODE void matrix4x4Scale(FIXED matrix[16], FIXED scalar);
-IWRAM_CODE void matrix4x4SetBasis(FIXED matrix[16],  Vec3 x, Vec3 y, Vec3 z);
-IWRAM_CODE void matrix4x4Transpose(FIXED mat[16]);
-IWRAM_CODE bool matrix4x4Inverse(const FIXED *m, FIXED *out);
+IWRAM_CODE_ARM void matrix4x4setIdentity(FIXED matrix[16]);
+IWRAM_CODE_ARM void matrix4x4SetTranslation(FIXED matrix[16], Vec3 translation);
+IWRAM_CODE_ARM void matrix4x4AddTranslation(FIXED matrix[16], Vec3 translation);
+IWRAM_CODE_ARM Vec3 matrix4x4GetTranslation(const FIXED matrix[16]);
+IWRAM_CODE_ARM void matrix4x4SetScale(FIXED matrix[16], FIXED scalar);
+IWRAM_CODE_ARM void matrix4x4Scale(FIXED matrix[16], FIXED scalar);
+IWRAM_CODE_ARM void matrix4x4SetBasis(FIXED matrix[16],  Vec3 x, Vec3 y, Vec3 z);
+IWRAM_CODE_ARM void matrix4x4Transpose(FIXED mat[16]);
+IWRAM_CODE_ARM bool matrix4x4Inverse(const FIXED *m, FIXED *out);
 
-IWRAM_CODE void matrix4x4createYawPitchRoll(FIXED matrix[16], ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll);
-IWRAM_CODE void matrix4x4createRotX(FIXED matrix[16], ANGLE_FIXED_12 angle);
-IWRAM_CODE void matrix4x4createRotY(FIXED matrix[16], ANGLE_FIXED_12 angle);
-IWRAM_CODE void matrix4x4createRotZ(FIXED matrix[16], ANGLE_FIXED_12 angle);
-IWRAM_CODE void matrix4x4Mul(FIXED a[16], const FIXED b[16]);
-IWRAM_CODE void matrix4x4createMul(const FIXED a[16], const FIXED b[16], FIXED result[16]);
+IWRAM_CODE_ARM void matrix4x4createYawPitchRoll(FIXED matrix[16], ANGLE_FIXED_12 yaw, ANGLE_FIXED_12 pitch, ANGLE_FIXED_12 roll);
+IWRAM_CODE_ARM void matrix4x4createRotX(FIXED matrix[16], ANGLE_FIXED_12 angle);
+IWRAM_CODE_ARM void matrix4x4createRotY(FIXED matrix[16], ANGLE_FIXED_12 angle);
+IWRAM_CODE_ARM void matrix4x4createRotZ(FIXED matrix[16], ANGLE_FIXED_12 angle);
+IWRAM_CODE_ARM void matrix4x4Mul(FIXED a[16], const FIXED b[16]);
+IWRAM_CODE_ARM void matrix4x4createMul(const FIXED a[16], const FIXED b[16], FIXED result[16]);
 
 void mathInit(void);
 

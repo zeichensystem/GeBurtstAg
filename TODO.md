@@ -8,12 +8,12 @@
 - [ ] Handle .obj colours on import (so far, we just set all colours to a default one).
 - [ ] Affine texture mapping (cf. fatmap.txt)
 
-## Implementation details and Bugfixes 
-- [ ] use sin_lut instead of fxSin for better accuracy maybe. 
-- [ ] Put models into ROM (const)                
+## Implementation details and Bugfixes              
 - [ ] Backface culling winding order/normal problem        x
 - [ ] Broadphase with bounding spheres for model-instances (and option for models with fewer faces which get activated if their distance to the camera is large).
 - [ ] Use division LUTs for triangle-filling (integers) and for perspective divides (fixed point)
+- [ ] use sin_lut instead of fxSin for better accuracy maybe. 
+- [ ] Put models into ROM (const)   
 - [ ] Option for pre-sorted geometry (in case the camera moves only backward/forwards etc. it would be more efficient).
 - [ ] Proper near-plane clipping 
 - [ ] Option to calculate the actual centroid of a face for sorting
@@ -29,3 +29,6 @@
 - [x] Don't recalculate vertex projections for each face! 
 - [x] Better polygon sorting (Ordering table.)
 - [x] Mode switching
+
+Immediate TODO: 
+- Key chording for scene switching
