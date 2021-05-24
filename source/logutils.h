@@ -23,10 +23,12 @@
 void mgba_log(const u32 level, const char* str);
 void mgba_printf(const char* fmt, ...);
 
-// My own functions here
+// My own functions from here...
 void assertion(bool cond, const char* name);
 void panic(const char* message);
 
 int getFps(void);
+void logutilsInit(int showPerfInteval);
+void perfPrint(void);
 
 #endif

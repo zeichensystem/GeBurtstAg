@@ -115,7 +115,7 @@ void performanceEnd(int perfId)
     timerStop(&perfData->timer);
 }
 
-void performanceReset(void) 
+void performanceGather(void) 
 {
     for (int i = 0; i < currentPerformanceId; ++i) {
         performanceData[i].avgTime += performanceData[i].timer.time;
@@ -123,6 +123,7 @@ void performanceReset(void)
         timerRewind(&performanceData[i].timer);
      }
 }
+
 
 void performancePrintAll(void) 
 {

@@ -82,13 +82,11 @@ void sceneSwitchTo(int sceneID)
     }
 }
 
-static bool sceneUserSceneSwitch(void) 
+static void sceneUserSceneSwitch(void) 
 { 
     if (key_hit(KEY_SELECT)) {
         sceneSwitchTo((currentSceneID + 1) % SCENE_NUM);
-        return true;
     }
-    return false;
 }
 
 void scenesDispatchUpdate(void) 

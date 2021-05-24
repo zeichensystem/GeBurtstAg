@@ -10,7 +10,7 @@
 
 ## Implementation details and Bugfixes 
 - [ ] use sin_lut instead of fxSin for better accuracy maybe. 
-- [ ] Put models into ROM (const)                          x
+- [ ] Put models into ROM (const)                
 - [ ] Backface culling winding order/normal problem        x
 - [ ] Broadphase with bounding spheres for model-instances (and option for models with fewer faces which get activated if their distance to the camera is large).
 - [ ] Use division LUTs for triangle-filling (integers) and for perspective divides (fixed point)

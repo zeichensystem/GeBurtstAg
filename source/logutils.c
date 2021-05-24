@@ -91,11 +91,28 @@ void assertion(bool cond, const char* name)
 
 
 static FIXED prevFps = 0;
+static Timer showPerfTimer;
 
-int getFps(void) {
+int getFps(void) 
+{
     const FIXED smoothing = 205; // 0,8
     FIXED currentFps =  fx12Tofx(fx12div(int2fx12(1), g_timer.deltatime));
     FIXED fps = fxmul(prevFps, smoothing) + fxmul(currentFps, int2fx(1) - smoothing);
     prevFps = fps;
     return fx2int(fps);
 } 
+
+void logutilsInit(int showPerfInteval) 
+{
+    showPerfTimer = timerNew(int2fx12(showPerfInteval), TIMER_REGULAR); // We don't want to print the performance data every frame, so we use a timer to gather it in intervals. 
+    timerStart(&showPerfTimer);
+}
+
+void perfPrint(void) {
+    timerTick(&showPerfTimer);
+    if (showPerfTimer.done || !g_frameCount) { 
+        performancePrintAll();
+        timerStart(&showPerfTimer);
+    }     
+
+}

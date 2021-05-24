@@ -8,8 +8,6 @@
 #include "scene.h"
 #include "model.h"
 
-#define SHOW_DEBUG
-
 static FIXED_12 g_wave_time;
 static FIXED g_wave_amp;
 
@@ -41,22 +39,15 @@ int main(void)
     timerInit();
     modelInit();
     scenesInit();
-
-    Timer showPerfTimer = timerNew(int2fx12(2), TIMER_REGULAR); // We don't want to print the performance data every frame, so we use a timer to gather it in intervals. 
-    timerStart(&showPerfTimer);
+    logutilsInit(2);
 
     while (1) {
         scenesDispatchUpdate();
         scenesDispatchDraw();
-
-        if (showPerfTimer.done || !g_frameCount) { 
-            performancePrintAll();
-            timerStart(&showPerfTimer);
-        }
-
+        
+        performanceGather();
+        perfPrint();
         timerTick(&g_timer);
-        timerTick(&showPerfTimer);
-        performanceReset();
         ++g_frameCount;
     }
     return 0; // For dust thou art, and unto dust shalt thou return.

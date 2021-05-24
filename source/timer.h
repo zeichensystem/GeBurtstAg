@@ -49,7 +49,7 @@ int performanceDataRegister(const char* name);// invariant: has to be called onc
 void performanceStart(int perfId);
 
 void performanceEnd(int perfId);
-void performanceReset(void);
+void performanceGather(void);
 void performancePrintAll(void);
 
 #endif
