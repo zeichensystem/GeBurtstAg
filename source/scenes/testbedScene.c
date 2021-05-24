@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-#include "test.h"
+#include "testbedScene.h"
+#include "../scene.h"
 #include "../globals.h"
 #include "../math.h"
 #include "../camera.h"
@@ -36,7 +36,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 
 
 
-void scene3dInit(void) 
+void testbedSceneInit(void) 
 {     
         headModelInit(); 
         // suzanneModelInit();
@@ -77,7 +77,7 @@ void scene3dInit(void)
 }        
 
 
-void scene3dUpdate(void) 
+void testbedSceneUpdate(void) 
 {
         timerTick(&timer);
         for (int i = 0; i < NUM_CUBES; ++i) {
@@ -114,7 +114,7 @@ void scene3dUpdate(void)
 }
 
 bool toggle = false;
-void scene3dDraw(void) 
+void testbedSceneDraw(void) 
 {
         drawBefore(&camera);
         memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
@@ -135,17 +135,17 @@ void scene3dDraw(void)
 
 }
 
-void scene3dStart(void) 
+void testbedSceneStart(void) 
 {
         videoM5ScaledInit();
         timerStart(&timer);
 }
 
-void scene3dPause(void) {
+void testbedScenePause(void) {
         timerStop(&timer);
 }
 
-void scene3dResume(void) {
+void testbedSceneResume(void) {
         videoM5ScaledInit();
         timerResume(&timer);
 }

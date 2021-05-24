@@ -4,14 +4,9 @@
 #include "logutils.h"
 #include "globals.h"
 
-#include "scenes/test.h"
-#include "scenes/3d.h"
-#include "scenes/twister.h"
-
 #define SHOW_DEBUG 
 #define USER_SCENE_SWITCH
-#define SCENE_NUM 3
-static Scene scenes[SCENE_NUM];
+
 static int currentSceneID;
 
 static Scene sceneNew(const char* name, void (*init)(void), void (*start)(void), void (*pause)(void), void (*resume)(void), void (*update)(void), void (*draw)(void)) 
@@ -28,17 +23,30 @@ static Scene sceneNew(const char* name, void (*init)(void), void (*start)(void),
     return s;
 }
 
+
+// !CODEGEN_START
+
+#include "scenes/cubespaceScene.h"
+#include "scenes/testbedScene.h"
+#include "scenes/twisterScene.h"
+
+#define SCENE_NUM 3
+static Scene scenes[SCENE_NUM];
+
 void scenesInit(void) 
 {
-    scenes[0] = sceneNew("Test scene", sceneTestInit, sceneTestStart, sceneTestPause, sceneTestResume, sceneTestUpdate, sceneTestDraw);
-    scenes[1] = sceneNew("3d scene", scene3dInit, scene3dStart, scene3dPause, scene3dResume, scene3dUpdate, scene3dDraw);
-    scenes[2] = sceneNew("Twister scene", twisterInit, twisterStart, twisterPause, twisterResume, twisterUpdate, twisterDraw);
+    scenes[0] = sceneNew("cubespaceScene", cubespaceSceneInit, cubespaceSceneStart, cubespaceScenePause, cubespaceSceneResume, cubespaceSceneUpdate, cubespaceSceneDraw);
+    scenes[1] = sceneNew("testbedScene", testbedSceneInit, testbedSceneStart, testbedScenePause, testbedSceneResume, testbedSceneUpdate, testbedSceneDraw);
+    scenes[2] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
 
     for (int i = 0; i < SCENE_NUM; ++i) {
         scenes[i].init();
     }
-    currentSceneID = 2; // The ID of the initial scene
+    currentSceneID = 1; // The ID of the initial scene
 }
+
+// !CODEGEN_END   
+
 
 void sceneSwitchTo(int sceneID) 
 {

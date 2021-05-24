@@ -4,6 +4,8 @@
 
 #define SCENE_NAME_MAX_LEN 64
 
+typedef enum SceneID {CUBESPACESCENE=0, TESTBEDSCENE, TWISTERSCENE, } SceneID;
+
 typedef struct Scene {
     char name[SCENE_NAME_MAX_LEN];
     bool hasStarted;

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "test.h"
+#include "cubespaceScene.h"
 #include "../globals.h"
 #include "../camera.h"
 #include "../render/draw.h"
@@ -27,7 +27,7 @@ EWRAM_DATA static Vec3 points[NUM_POINTS];
 static int perfDrawID, perfProjectID, perfSortID;
 
 
-void sceneTestInit(void) {     
+void cubespaceSceneInit(void) {     
         camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(0)}, float2fx(PI_FLT / 180. * 43), int2fx(1), int2fx(256), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
@@ -54,7 +54,7 @@ void sceneTestInit(void) {
 }
 
 
-void sceneTestUpdate(void) 
+void cubespaceSceneUpdate(void) 
 {
         for (int i = 0; i < NUM_CUBES; ++i) {
                 FIXED_12 dir = i % 2 ? int2fx12(-1) : int2fx12(1);
@@ -78,7 +78,7 @@ void sceneTestUpdate(void)
 }
 
 
-void sceneTestDraw(void) 
+void cubespaceSceneDraw(void) 
 {
         drawBefore(&camera);
         memset32(vid_page, dup16(CLR_BLACK), (M5_SCALED_H  * M5_SCALED_W)/2);	
@@ -87,17 +87,17 @@ void sceneTestDraw(void)
 }
 
 
-void sceneTestStart(void) 
+void cubespaceSceneStart(void) 
 {
         videoM5ScaledInit();
         timerStart(&timer);
 }
 
-void sceneTestPause(void) {
+void cubespaceScenePause(void) {
         timerStop(&timer);
 }
 
-void sceneTestResume(void) 
+void cubespaceSceneResume(void) 
 {
         videoM5ScaledInit();
         timerResume(&timer);

@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-#include "test.h"
+#include "twisterScene.h"
 #include "../globals.h"
 #include "../logutils.h"
 #include "../timer.h"
@@ -46,7 +46,7 @@ static int radiusZ = 20;
 static int letterboxTop = 40;
 static int letterboxBottom = 120;
 
-void twisterInit(void) 
+void twisterSceneInit(void) 
 {     
     timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
 
@@ -63,7 +63,7 @@ void twisterInit(void)
 
 }        
 
-void twisterUpdate(void) 
+void twisterSceneUpdate(void) 
 {
     timerTick(&timer);
 
@@ -169,7 +169,7 @@ static void renderTwisters(Twister **tw, int num)
     }
 }
 
-void twisterDraw(void) 
+void twisterSceneDraw(void) 
 {
     memset32(vid_page, quad8(CLRIDX_BLACK), 15 * M4_WIDTH/4);
     memset32(vid_page + letterboxTop * M4_WIDTH / 2, quad8(CLRIDX_PASTEL_BLUE), (letterboxBottom - letterboxTop) * M4_WIDTH/4);
@@ -200,17 +200,17 @@ static void videoModeInit(void) {
 }
 
 
-void twisterStart(void) {
+void twisterSceneStart(void) {
     videoModeInit();    
     m4_fill(CLRIDX_BLACK);
     timerStart(&timer);
 }
 
-void twisterPause(void) {
+void twisterScenePause(void) {
         timerStop(&timer);
 }
 
-void twisterResume(void) 
+void twisterSceneResume(void) 
 {
     videoModeInit();
     m4_fill(CLRIDX_BLACK);
