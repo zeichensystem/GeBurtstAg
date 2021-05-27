@@ -67,6 +67,25 @@ void vecTransform(const FIXED matrix[16], Vec3 *vec)
     }
 }
 
+// We can just use vecTransform, but it's more efficient to handle less general cases separately. 
+void vecTranformAffine(const FIXED matrix[16], Vec3 *vec) 
+{
+    Vec3 transformed;
+    transformed.x = fxmul(vec->x, matrix[0]) + fxmul(vec->y, matrix[1]) + fxmul(vec->z, matrix[2])  + matrix[3];
+    transformed.y = fxmul(vec->x, matrix[4]) + fxmul(vec->y, matrix[5]) + fxmul(vec->z, matrix[6])  + matrix[7];
+    transformed.z = fxmul(vec->x, matrix[8]) + fxmul(vec->y, matrix[9]) + fxmul(vec->z, matrix[10]) + matrix[11];
+    *vec = transformed;
+}
+
+Vec3 vecTransformedRot(FIXED rotmat[16], const Vec3 *v) 
+{
+    Vec3 rotated;
+    rotated.x = fxmul(v->x, rotmat[0]) + fxmul(v->y, rotmat[1]) + fxmul(v->z, rotmat[2] );
+    rotated.y = fxmul(v->x, rotmat[4]) + fxmul(v->y, rotmat[5]) + fxmul(v->z, rotmat[6] );
+    rotated.z = fxmul(v->x, rotmat[8]) + fxmul(v->y, rotmat[9]) + fxmul(v->z, rotmat[10]);
+    return rotated;
+}
+
 Vec3 vecScaled(Vec3 vec, FIXED factor) 
 {
     vec.x = fxmul(vec.x, factor);
@@ -247,6 +266,7 @@ void matrix4x4createYawPitchRoll(FIXED matrix[16], ANGLE_FIXED_12 yaw, ANGLE_FIX
     matrix[9] = fxmul(sinFx(roll), sinFx(yaw)) + fxmul(fxmul(cosFx(roll), cosFx(yaw)), sinFx(pitch));
     matrix[10] = fxmul(cosFx(pitch), cosFx(yaw));
 }
+
 
 void matrix4x4Mul(FIXED a[16], const FIXED b[16]) 
 {

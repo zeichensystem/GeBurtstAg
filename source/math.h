@@ -5,7 +5,7 @@
 
 #include "commondefs.h"
 
-#define PI_FLT 3.14159265f
+// #define PI_FLT 3.14159265f
 #define TAU 0xFFFF
 #define PI 0x8000 // round(TAU / 2)
 #define ONE_DEGREE  0xB6
@@ -31,6 +31,8 @@ IWRAM_CODE_ARM FIXED vecMag(Vec3 a);
 
 IWRAM_CODE_ARM Vec3 vecTransformed(const FIXED matrix[16], Vec3 vec);
 IWRAM_CODE_ARM void vecTransform(const FIXED matrix[16], Vec3 *vec);
+IWRAM_CODE_ARM void vecTranformAffine(const FIXED matrix[16], Vec3 *vec);
+IWRAM_CODE_ARM Vec3 vecTransformedRot(FIXED rotmat[16], const Vec3 *v);
 
 IWRAM_CODE_ARM void matrix4x4setIdentity(FIXED matrix[16]);
 IWRAM_CODE_ARM void matrix4x4SetTranslation(FIXED matrix[16], Vec3 translation);

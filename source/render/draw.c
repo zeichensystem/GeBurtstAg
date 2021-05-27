@@ -189,8 +189,7 @@ INLINE void drawTriangleWireframe(const RasterTriangle *tri)
 
 #define FACE_CALC_COLOR() {                                                                                                     \
     if (instanceShading == SHADING_FLAT_LIGHTING) {                                                                             \
-        const Vec3 faceNormal = vecTransformed(instanceRotMat, face.normal); /* Rotate the face's normal (in model space). */   \
-        const FIXED lightAlpha = vecDot(lightDir, faceNormal);                                                                  \
+        const FIXED lightAlpha = vecDot(lightDir, triNormal);                                                                  \
         if (lightAlpha > 0) {                                                                                                   \
             COLOR shade = fx2int(fxmul(lightAlpha, int2fx(31)));                                                                \
             if (attenuation != -1) {                                                                                            \
@@ -236,7 +235,9 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
         FIXED instanceRotMat[16];
         matrix4x4createYawPitchRoll(instanceRotMat, instance->state.yaw, instance->state.pitch, instance->state.roll);
         Vec3 vertsCamSpace[MAX_MODEL_VERTS];
+        Vec3 vertsWorldSpace[MAX_MODEL_VERTS];
         RasterPoint vertsProjected[MAX_MODEL_VERTS];
+
         for (int i = 0; i < instance->state.mod.numVerts; ++i) {
             // Model space to world space:
             vertsCamSpace[i].x = fxmul(instance->state.mod.verts[i].x, instance->state.scale.x); 
@@ -247,6 +248,7 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
             vertsCamSpace[i].x += instance->state.pos.x;
             vertsCamSpace[i].y += instance->state.pos.y;
             vertsCamSpace[i].z += instance->state.pos.z;
+            vertsWorldSpace[i] = vertsCamSpace[i];
             vecTransform(cam->world2cam, vertsCamSpace + i); // And finally, we're in camera space.
             if (BEHIND_NEAR(vertsCamSpace[i]) || BEYOND_FAR(vertsCamSpace[i])) {  
                 vertsProjected[i].x = RASTER_POINT_NEAR_FAR_CULL;
@@ -267,12 +269,13 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
             const Face face = instance->state.mod.faces[faceNum];
 
              // Backface culling (assumes a counter-clockwise winding order):
-            const Vec3 a = vecSub(vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[0]]);
-            const Vec3 b = vecSub(vertsCamSpace[face.vertexIndex[2]], vertsCamSpace[face.vertexIndex[0]]);
-            const Vec3 triNormal = vecCross(b, a);
-            // const Vec3 triNormal = vecTransformed(instanceRotMat, face.normal);
-            const Vec3 camToTri = vertsCamSpace[face.vertexIndex[2]]; // Remember, vertsCamSpace[] is in camera space already, so it doesn't make sense subtract the camera's wolrd position!
-                        
+            // const Vec3 a = vecSub(vertsCamSpace[face.vertexIndex[1]], vertsCamSpace[face.vertexIndex[0]]);
+            // const Vec3 b = vecSub(vertsCamSpace[face.vertexIndex[2]], vertsCamSpace[face.vertexIndex[0]]);
+            // const Vec3 triNormal = vecCross(b, a);
+            // const Vec3 camToTri = vertsCamSpace[face.vertexIndex[2]];
+
+            const Vec3 triNormal = vecTransformedRot(instanceRotMat, &face.normal);
+            const Vec3 camToTri = vecSub(cam->pos, vertsWorldSpace[face.vertexIndex[0]]); 
             if (vecDot(triNormal, camToTri) <= 0) { // If the angle between camera and normal is not between 90 degs and 270 degs, the face is invisible and to be culled.
                 continue;
             }

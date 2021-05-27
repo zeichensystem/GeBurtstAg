@@ -68,7 +68,7 @@ void testbedSceneInit(void)
                 cubesCenter.z = z;
                 cubesCenter.y = 0;
              } else {
-                modelInstanceAdd(&cubePool, cubeModel, &(Vec3){.x=x, .y=int2fx(0), .z=z}, &(Vec3){.x=size, .y=int2fx(6), .z=int2fx(1)}, 0, 0, 0, SHADING_FLAT_LIGHTING);
+                modelInstanceAdd(&cubePool, cubeModel, &(Vec3){.x=x, .y=int2fx(0), .z=z}, &(Vec3){.x=size, .y=int2fx(6), .z=int2fx(1)}, 0, 0, 0, SHADING_FLAT);
              }
         } 
         Vec3 headScale = {.x=int2fx(2),.y=int2fx(2), .z=int2fx(2)};
