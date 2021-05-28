@@ -28,6 +28,8 @@ void waveUpdate(void)
 
 int main(void) 
 {
+    // REG_WAITCNT controls the pre-fetch buffer and the waitstates of the external cartridge bus.
+    REG_WAITCNT = 0x4317; // This setting yields a *major* perf improvement over the defaults; cf. https://problemkaputt.de/gbatek.htm#gbatechnicaldata (last retrieved 2021-05-28).
     srand(1997); 
     irq_init(NULL);
     irq_add(II_VBLANK, NULL);
