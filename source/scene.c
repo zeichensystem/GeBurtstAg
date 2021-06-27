@@ -3,11 +3,13 @@
 #include "scene.h"
 #include "logutils.h"
 #include "globals.h"
+#include "keyseq.h"
 
 #define SHOW_DEBUG 
 #define USER_SCENE_SWITCH
 
 static int currentSceneID;
+static KeySeqWatcher sceneSwitchKeySeq;
 
 static Scene sceneNew(const char* name, void (*init)(void), void (*start)(void), void (*pause)(void), void (*resume)(void), void (*update)(void), void (*draw)(void)) 
 {
@@ -23,6 +25,13 @@ static Scene sceneNew(const char* name, void (*init)(void), void (*start)(void),
     return s;
 }
 
+void sceneKeySeqInit(void) 
+{
+    // The sequence which is used to switch keys in debug mode. 
+    const u32 matchSeq[KEY_SEQ_MAX_LEN] = {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, KEY_A}; 
+    const FIXED_12 matchInterval = int2fx12(1) >> 1;
+    sceneSwitchKeySeq = keySeqWatcherNew(matchInterval, matchSeq, 5);
+}
 
 // !CODEGEN_START
 
@@ -45,6 +54,7 @@ void scenesInit(void)
         scenes[i].init();
     }
     currentSceneID = 2; // The ID of the initial scene
+    sceneKeySeqInit();
 }
 
 // !CODEGEN_END   
@@ -86,10 +96,11 @@ void sceneSwitchTo(int sceneID)
 
 static void sceneUserSceneSwitch(void) 
 { 
-    if (key_hit(KEY_SELECT)) {
+    if (keySeqWatcherUpdate(&sceneSwitchKeySeq)) {
         sceneSwitchTo((currentSceneID + 1) % SCENE_NUM);
     }
 }
+
 
 void scenesDispatchUpdate(void) 
 {

@@ -22,17 +22,42 @@ class Model:
         self.verts = []
         self.faces = []
         self.normals = []
+        self.materials = {}
         self.max_model_faces = max_model_faces
         self.max_model_verts = max_model_verts
         self.input_filename = filename
         self.obj_parse(filename)
 
+    def material_parse(self): 
+        float2fx8 = lambda n: int(n * 256) 
+
+        mtl_file = pathlib.Path(self.input_filename).with_suffix(".mtl")
+        if mtl_file.exists():
+            current_mtl = ""
+            for line in open(mtl_file):
+                line = line.strip().lower()
+                line_toks = line.split()
+
+                if len(line_toks) == 2 and line_toks[0] == "newmtl":
+                    current_mtl = "".join(line_toks[1:])
+                    self.materials[current_mtl] = (0,0,0)
+                
+                elif len(line_toks) >= 4 and line_toks[0] == "kd":
+                    self.materials[current_mtl] = (float2fx8(float(line_toks[1])), float2fx8(float(line_toks[2])), float2fx8(float(line_toks[3])))
+
+
     def obj_parse(self, filename: pathlib.Path):
         float2fx8 = lambda n: int(n * 256) 
+
+        self.material_parse()
+        print(f"{self.materials}")
 
         for line_num, line in enumerate(open(filename)):
             line = line.strip().lower()
             line_toks = line.split()
+            if len(line_toks) == 0:
+                continue
+            
             if line.startswith("#"):
                 continue
             elif line.startswith("s"): # For now, We ignore shading information.
@@ -54,7 +79,7 @@ class Model:
                 except ValueError:
                     raise Model.ModelParseError(f"Problem in {filename} on line {line_num+1}: Vertex-normal contains non-number value.")
 
-            elif line.startswith("v"): # Vertices:
+            elif line_toks[0] == "v": # Vertices:
                 if len(line_toks) != 4:
                     raise Model.ModelParseError(f"Problem in {filename} on line {line_num+1}: Vertex has {len(line_toks) - 1} values, but must have exactly 3.")
                 try:

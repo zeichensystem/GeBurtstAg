@@ -28,7 +28,7 @@ static int screenTriangleCount = 0;
 #define OT_SIZE 512
 // We assume an .8 fixed point representation of our depth values; we calculate the index by converting to .1 fixed point, which means at a z-value of OT_SIZE/2 (integer) we have a index of OT_SIZE   
 #define MAX_Z (OT_SIZE / 2 - 1)
-static RasterTriangle *orderingTable[OT_SIZE];
+static RasterTriangle *orderingTable[OT_SIZE]; // TODO: We might have to put this into EWRAM to save space in IWRAM...
 
 static int perfFill, perfModelProcessing, perfTotal, perfProject;
 

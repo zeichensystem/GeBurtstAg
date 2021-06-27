@@ -62,8 +62,9 @@ void timerRewind(Timer *timer)
     timer->time = 0;
 }
 
+// Consecutive calls of a regular timer must be within ~15 (2^-12 * 0xffff) seconds of each other (so just call it each frame and don't worry); performance timers every second.
 void timerTick(Timer *timer) 
-{ // Consecutive calls of a regular timer must be within ~15 (2^-12 * 0xffff) seconds of each other (so just call it each frame and don't worry); performance timers every second.
+{ 
     if (timer->stopped || timer->done) {
         return;
     }
@@ -85,8 +86,9 @@ void timerTick(Timer *timer)
 }
 
 
+// Invariant: has to be called once per second TODO: allow for TIMER_REGULAR
 int performanceDataRegister(const char* name) 
-{ // Invariant: has to be called once per second TODO: allow for TIMER_REGULAR
+{ 
     assertion(currentPerformanceId < MAX_PERF_DATA, "timer.c/performanceStart(): currentPerfId < MAX_PERF_DATA");
     PerformanceData *perfData = performanceData + currentPerformanceId;
     perfData->id = currentPerformanceId;
@@ -97,7 +99,6 @@ int performanceDataRegister(const char* name)
     currentPerformanceId++;
     return perfData->id;
 }
-
 
 void performanceStart(int perfId) 
 {
@@ -123,7 +124,6 @@ void performanceGather(void)
         timerRewind(&performanceData[i].timer);
      }
 }
-
 
 void performancePrintAll(void) 
 {

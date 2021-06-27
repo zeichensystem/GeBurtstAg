@@ -20,14 +20,14 @@ ModelInstancePool monkeyPool;
 ModelInstance *monkey, *cube;
 
 /* 
-    Current per-frame performance: 
+    Current per-frame performance (it's above 30 FPS!): 
     - directional: 
-    [INFO] GBA Debug: draw:c pre-rasterisation: 10.314941 ms (55 samples)
-    [INFO] GBA Debug: draw.c: total: 32.241699 ms (55 samples)
+    [INFO] GBA Debug: draw:c pre-rasterisation: 9.322998 ms (65 samples)
+    [INFO] GBA Debug: draw.c: total: 27.709961 ms (65 samples)
 
     - point-light:
-    [INFO] GBA Debug: draw:c pre-rasterisation: 10.513184 ms (54 samples)
-    [INFO] GBA Debug: draw.c: total: 32.440186 ms (54 samples) 
+    [INFO] GBA Debug: draw:c pre-rasterisation: 9.506104 ms (64 samples)
+    [INFO] GBA Debug: draw.c: total: 27.893066 ms (64 samples)
 */ 
 
 void benchmarkSceneInit(void) 

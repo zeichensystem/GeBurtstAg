@@ -155,6 +155,7 @@ def generate_scene_c():
             scenes[i].init();
         }}
         currentSceneID = {start_scene_idx}; // The ID of the initial scene
+        sceneKeySeqInit();
     }}
 
     // !CODEGEN_END""")

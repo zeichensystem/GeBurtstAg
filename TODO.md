@@ -29,6 +29,5 @@
 - [x] Don't recalculate vertex projections for each face! 
 - [x] Better polygon sorting (Ordering table.)
 - [x] Mode switching
+- [x] Key chording for scene switching
 
-Immediate TODO: 
-- Key chording for scene switching
