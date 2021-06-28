@@ -29,8 +29,9 @@ void sceneKeySeqInit(void)
 {
     // The sequence which is used to switch keys in debug mode. 
     const u32 matchSeq[KEY_SEQ_MAX_LEN] = {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, KEY_A}; 
-    const FIXED_12 matchInterval = int2fx12(1) >> 1;
-    sceneSwitchKeySeq = keySeqWatcherNew(matchInterval, matchSeq, 5);
+    const FIXED_12 matchInterval = 1229; // ~0.3 in .12 fixed point. 
+    const u32 matchSeqLen = 5;
+    sceneSwitchKeySeq = keySeqWatcherNew(matchInterval, matchSeq, matchSeqLen);
 }
 
 // !CODEGEN_START
@@ -39,8 +40,9 @@ void sceneKeySeqInit(void)
 #include "scenes/testbedScene.h"
 #include "scenes/benchmarkScene.h"
 #include "scenes/twisterScene.h"
+#include "scenes/gbaScene.h"
 
-#define SCENE_NUM 4
+#define SCENE_NUM 5
 static Scene scenes[SCENE_NUM];
 
 void scenesInit(void) 
@@ -49,11 +51,12 @@ void scenesInit(void)
     scenes[1] = sceneNew("testbedScene", testbedSceneInit, testbedSceneStart, testbedScenePause, testbedSceneResume, testbedSceneUpdate, testbedSceneDraw);
     scenes[2] = sceneNew("benchmarkScene", benchmarkSceneInit, benchmarkSceneStart, benchmarkScenePause, benchmarkSceneResume, benchmarkSceneUpdate, benchmarkSceneDraw);
     scenes[3] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
+    scenes[4] = sceneNew("gbaScene", gbaSceneInit, gbaSceneStart, gbaScenePause, gbaSceneResume, gbaSceneUpdate, gbaSceneDraw);
 
     for (int i = 0; i < SCENE_NUM; ++i) {
         scenes[i].init();
     }
-    currentSceneID = 2; // The ID of the initial scene
+    currentSceneID = 4; // The ID of the initial scene
     sceneKeySeqInit();
 }
 

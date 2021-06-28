@@ -11,7 +11,6 @@
 #include "../timer.h"
 #include "../math.h"
 
-
 #define NUM_CUBES 9
 #define NUM_POINTS 200
 
@@ -43,16 +42,15 @@ void cubespaceSceneInit(void) {
         }
 
         for (int i = 0; i < NUM_POINTS; ++i) {  // Initialise stars.
-                int dirx = rand() % 2 ? 1 : -1;
-                int diry = rand() % 2 ? 1 : -1;
-                int dirz = rand() % 2 ? 1 : -1;
-                FIXED x = int2fx( (rand() % 8 + 1) * 9 );
-                FIXED y = int2fx( (rand() % 8 + 1) * 9 );
-                FIXED z = int2fx( (rand() % 8 + 1) * 9 );
+                int dirx = qran() % 2 ? 1 : -1;
+                int diry = qran() % 2 ? 1 : -1;
+                int dirz = qran() % 2 ? 1 : -1;
+                FIXED x = int2fx( qran_range(9, 81));
+                FIXED y = int2fx( qran_range(9, 81));
+                FIXED z = int2fx( qran_range(9, 81));
                 points[i] = (Vec3){(x * dirx), (y * diry), (dirz*z)};
         }
 }
-
 
 void cubespaceSceneUpdate(void) 
 {
@@ -76,7 +74,6 @@ void cubespaceSceneUpdate(void)
         camera.yaw = deg2fxangle(2);
         timerTick(&timer);
 }
-
 
 void cubespaceSceneDraw(void) 
 {

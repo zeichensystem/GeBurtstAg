@@ -335,6 +335,7 @@ IWRAM_CODE_ARM void drawModelInstancePools(ModelInstancePool *pools, int numPool
     }
     performanceEnd(perfModelProcessing);
 
+    // qsort(screenTriangles, screenTriangleCount, sizeof screenTriangles[0], triangleDepthCmp);
     if (screenTriangleCount == 0) {
         goto skipOT;
     }
@@ -350,6 +351,7 @@ IWRAM_CODE_ARM void drawModelInstancePools(ModelInstancePool *pools, int numPool
        }
     }
     skipOT:;
+
     
     performanceEnd(perfTotal);
     char dbg[64];

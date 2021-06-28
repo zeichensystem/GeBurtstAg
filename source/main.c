@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <tonc.h>
 
 #include "logutils.h"
@@ -16,7 +15,6 @@ void wave(void)
 {
     FIXED offset = fxmul(g_wave_amp, sinFx(int2fx12(REG_VCOUNT) >> 2));
     REG_BG2X = offset;
-
 }
 
 void waveUpdate(void) 
@@ -30,7 +28,7 @@ int main(void)
 {
     // REG_WAITCNT controls the pre-fetch buffer and the waitstates of the external cartridge bus.
     REG_WAITCNT = 0x4317; // This setting yields a *major* perf improvement over the defaults; cf. https://problemkaputt.de/gbatek.htm#gbatechnicaldata (last retrieved 2021-05-28).
-    srand(1997); 
+    sqran(1997);
     irq_init(NULL);
     irq_add(II_VBLANK, NULL);
     // irq_add(II_HBLANK, wave);
@@ -50,6 +48,7 @@ int main(void)
         
         performanceGather();
         perfPrint();
+
         timerTick(&g_timer);
         ++g_frameCount;
     }

@@ -6,6 +6,9 @@ from typing import Dict
 
 MAX_FX8 = 2**23 - 1 # Largest number representable as 24.8 fixed point. We will never run into it with non-ridiculous data. 
 
+def float2fx8(n): 
+    return int(n * 256)
+
 class Model:
     class ModelParseError(Exception):
         pass
@@ -14,6 +17,7 @@ class Model:
         def __init__(self):
             self.vert_idx = []
             self.normal_idx: int
+            self.color = (31, 31, 31)
         
     def __init__(self, filename: pathlib.Path, max_model_verts=None, max_model_faces=None):
         self.name = re.sub(r"\W", "", filename.stem) # Remove non-word characters.
@@ -29,8 +33,6 @@ class Model:
         self.obj_parse(filename)
 
     def material_parse(self): 
-        float2fx8 = lambda n: int(n * 256) 
-
         mtl_file = pathlib.Path(self.input_filename).with_suffix(".mtl")
         if mtl_file.exists():
             current_mtl = ""
@@ -43,15 +45,14 @@ class Model:
                     self.materials[current_mtl] = (0,0,0)
                 
                 elif len(line_toks) >= 4 and line_toks[0] == "kd":
-                    self.materials[current_mtl] = (float2fx8(float(line_toks[1])), float2fx8(float(line_toks[2])), float2fx8(float(line_toks[3])))
-
+                    self.materials[current_mtl] = (int(float(line_toks[1]) * 31), int(float(line_toks[2]) * 31), int(float(line_toks[3]) * 31))
 
     def obj_parse(self, filename: pathlib.Path):
         float2fx8 = lambda n: int(n * 256) 
 
         self.material_parse()
-        print(f"{self.materials}")
 
+        current_mtl = ""
         for line_num, line in enumerate(open(filename)):
             line = line.strip().lower()
             line_toks = line.split()
@@ -65,6 +66,8 @@ class Model:
             elif line.startswith("o"): # For now, we don't treat named objects seperately.
                 continue
 
+            elif line_toks[0] == "usemtl": # Face material
+                current_mtl = "".join(line_toks[1:])
             elif line.startswith("vn"): # Normals:
                 if (len(line_toks) != 4):
                     raise Model.ModelParseError(f"Problem in {filename} on line {line_num+1}: Vertex-normal has {len(line_toks) - 1} values, but must have exactly 3.")
@@ -98,6 +101,9 @@ class Model:
                 if len(line_toks) != 4:
                     raise Model.ModelParseError(f"Problem in {filename} on line {line_num+1}: Face has {len(line_toks) - 1} vertices, but must have exactly 3 (only tris are supported for now, did you triangulate your self ?).")
                 face = Model.Face()
+                if current_mtl != "":
+                    face.color = self.materials[current_mtl]
+
                 faceHasNormal = False
                 for i, vertData in enumerate(line_toks[1:]):
                     try:
@@ -118,6 +124,7 @@ class Model:
 
                 self.faces.append(face)
         
+
         if self.max_model_verts != None and len(self.verts) > self.max_model_verts:
             raise Model.ModelParseError(f"Model has {len(self.verts)} vertices while MAX_MODEL_VERTS is {self.max_model_verts}.")
 
@@ -149,7 +156,8 @@ class Model:
 
         for i, face in enumerate(self.faces):
             normal = self.normals[face.normal_idx]
-            faces_string += f"{{.vertexIndex = {{{face.vert_idx[0]}, {face.vert_idx[1]}, {face.vert_idx[2]}}}, .color = CLR_LIME, .normal={{{normal[0]}, {normal[1]}, {normal[2]}}}, .type=TriangleFace}}, "
+            face_clr = f"{face.color[0] + (face.color[1]<<5) + (face.color[2]<<10)}"
+            faces_string += f"{{.vertexIndex = {{{face.vert_idx[0]}, {face.vert_idx[1]}, {face.vert_idx[2]}}}, .color = {face_clr}, .normal={{{normal[0]}, {normal[1]}, {normal[2]}}}, .type=TriangleFace}}, "
         faces_string += "};"
 
         data_file = textwrap.dedent(f"""
@@ -190,7 +198,7 @@ def read_model_limits():
     return (MAX_MODEL_VERTS, MAX_MODEL_FACES)
 
 
-# In respect to the project directory.
+# With respect to the project directory.
 SOURCE_DIR = "source/"
 MODEL_DIR = "assets/models/"
 OUT_DIR_DATA = "data/"
@@ -222,6 +230,6 @@ if __name__ == "__main__":
         print(f"Converted all models {OKGREEN}(Success){END}")
     elif modelsWritten > 0 and modelsWritten < len(models):
         print(f"In:\t{' '.join(infile_paths)}\nOut:\t{' '.join(outfile_paths)}")
-        print(f"Some models could not be converted. This is a bug. {FAIL}(Failure){END}")
+        print(f"Some models could not be converted, but no specific error was caught. This is a bug. {FAIL}(Failure){END}")
 
  

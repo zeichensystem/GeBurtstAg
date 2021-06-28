@@ -9,6 +9,10 @@ SCENE_DIR = "source/scenes/"
 
 
 def generate_template(name, mode=None):
+    """ 
+    Generates an empty "template" scene file of the given name 
+    so we don't have to create them manually each time we want to add a new scene. 
+    """
     name_scene = name + "Scene"
 
     outpath_base = pathlib.Path(".").joinpath(SCENE_DIR).joinpath(name_scene)
@@ -192,7 +196,7 @@ def generate_scene_c():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creates scene templates, and generate appropriate sceneInit.")
     parser.add_argument("--new", type=str, help="Create a new scene of the given name.")
-    parser.add_argument("--mode", type=int, help="When creating a new scene, you can optionally specify which display mode the scene should use.")
+    parser.add_argument("--mode", type=int, help="When creating a new scene, you can optionally explicitly specify which display mode the scene should use (4 or 5).")
 
     args = parser.parse_args()
 
