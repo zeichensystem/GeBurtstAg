@@ -308,7 +308,12 @@ void matrix4x4Transpose(FIXED mat[16])
 }
 
 
-// Not my code, also not used anymore , and only included for reference. Numerical matrix inversion code: https://stackoverflow.com/questions/1148309/inverting-a-4x4-matrix
+/* 
+    The following is not my code and belongs to its respective author. (I simply converted it to use fixed point instead of floats.)
+    It's not used anymore, and only included as a comment for reference in case we want to invert non-orthonormal matrices one day. 
+    It's some sort of numerical approach to matrix inversion (it worked fine, but the transpose approach is simpler, and less general).
+    cf. https://stackoverflow.com/questions/1148309/inverting-a-4x4-matrix (last retrieved 2021-06-29)
+
 FIXED invf(int i,int j,const FIXED* m) 
 {
     int o = 2+(j-i);
@@ -349,3 +354,4 @@ bool matrix4x4Inverse(const FIXED *m, FIXED *out)
 
     return true;
 }
+*/

@@ -8,7 +8,7 @@
 #include "../timer.h"
 #include "../render/draw.h"
 
-#include "../data/suzanneModel.h"
+#include "../../data-models/suzanneModel.h"
 
 static Timer timer;
 static Camera cam;

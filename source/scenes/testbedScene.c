@@ -12,7 +12,7 @@
 #include "../logutils.h"
 #include "../timer.h"
 
-#include "../data/headModel.h"
+#include "../../data-models/headModel.h"
 
 
 #define NUM_CUBES 9

@@ -7,7 +7,7 @@
 #include "../timer.h"
 #include "../render/draw.h"
 
-#include "../data/gbaModel.h"
+#include "../../data-models/gbaModel.h"
 
 static Timer timer;
 

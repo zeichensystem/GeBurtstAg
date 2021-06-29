@@ -1,0 +1,4 @@
+# Assumes to be invoked from the project's top-level directory (namely where the top-level devkitarm-based Makefile is located).
+
+data-models/*.c data-models/*.h &: assets/models/*.obj 
+	python3 tools/obj2model.py

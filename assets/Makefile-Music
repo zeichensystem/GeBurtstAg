@@ -1,0 +1,7 @@
+# Assumes to be invoked from the project's top-level directory (namely where the top-level devkitarm-based Makefile is located).
+
+CONV2AAS := lib/apex-audio-system/build/conv2aas/conv2aas
+
+data-audio/*.s data-audio/*.h &: assets/music
+	@ $(CONV2AAS) assets/music
+	@ mv AAS_Data.s AAS_Data.h data-audio

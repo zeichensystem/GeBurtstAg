@@ -201,7 +201,7 @@ def read_model_limits():
 # With respect to the project directory.
 SOURCE_DIR = "source/"
 MODEL_DIR = "assets/models/"
-OUT_DIR_DATA = "data/"
+OUT_DIR_DATA = "data-models/"
 
 if __name__ == "__main__":
     MAX_MODEL_VERTS, MAX_MODEL_FACES = read_model_limits()
@@ -231,5 +231,3 @@ if __name__ == "__main__":
     elif modelsWritten > 0 and modelsWritten < len(models):
         print(f"In:\t{' '.join(infile_paths)}\nOut:\t{' '.join(outfile_paths)}")
         print(f"Some models could not be converted, but no specific error was caught. This is a bug. {FAIL}(Failure){END}")
-
- 

@@ -9,22 +9,20 @@
 static PerformanceData performanceData[MAX_PERF_DATA];
 static int currentPerformanceId;
 
-
 void timerInit(void) 
 {
-    REG_TM0D = 0x10000 - 4;  // 4 ticks till overflow (at 16384 Hz (1024 cycles), that means we have a overflow every 4 * 16384^-1 =  2^-12 s, or 0.2 ms)
-    REG_TM0CNT = TM_ENABLE | TM_FREQ_1024;
-    REG_TM1CNT = TM_ENABLE | TM_CASCADE;  // will increment in 2^-12 seconds (4098 Hz), can be used as a .12 fixed point number then, overflows every 16 seconds
-    
-    REG_TM2D = 0x10000 - 0xffff; // 0xffff ticks till overflow, or about 1 seconds (65536 Hz)
-    REG_TM2CNT = TM_ENABLE | TM_FREQ_256;
+    REG_TM2D = 0x10000 - 4;  // 4 ticks till overflow (at 16384 Hz (1024 cycles), that means we have a overflow every 4 * 16384^-1 =  2^-12 s, or 0.2 ms)
+    REG_TM2CNT = TM_ENABLE | TM_FREQ_1024;
+    REG_TM3CNT = TM_ENABLE | TM_CASCADE;  // will increment in 2^-12 seconds (4098 Hz), can be used as a .12 fixed point number then, overflows every 16 seconds
+    // REG_TM2D = 0x10000 - 0xffff; // 0xffff ticks till overflow, or about 1 seconds (65536 Hz)
+    // REG_TM2CNT = TM_ENABLE | TM_FREQ_256;
     
     for (int i = 0; i < MAX_PERF_DATA; ++i) {
         performanceData[i].avgTime = 0;
     }
 }
 
-
+// We ignore the TimerType; it's always TIMER_REGULAR for now regardless of the argument (we need Timer 0 and 1 for apex audio).
 Timer timerNew(FIXED_12 duration, TimerType type) 
 {
     Timer timer;
@@ -40,7 +38,8 @@ Timer timerNew(FIXED_12 duration, TimerType type)
 
 void timerStart(Timer *timer) 
 {
-    timer->__prevTimerState = timer->type == TIMER_REGULAR ? REG_TM1D : REG_TM2D;
+    // timer->__prevTimerState = timer->type == TIMER_REGULAR ? REG_TM1D : REG_TM2D;
+    timer->__prevTimerState = REG_TM3D;
     timer->time = 0;
     timer->stopped = false;
     timer->done = false;
@@ -54,7 +53,9 @@ void timerStop(Timer *timer)
 void timerResume(Timer *timer) 
 {
     timer->stopped = false;
-    timer->__prevTimerState = timer->type == TIMER_REGULAR ? REG_TM1D : REG_TM2D;
+    // timer->__prevTimerState = timer->type == TIMER_REGULAR ? REG_TM1D : REG_TM2D;
+    timer->__prevTimerState = REG_TM3D;
+
 }
 
 void timerRewind(Timer *timer) 
@@ -69,7 +70,8 @@ void timerTick(Timer *timer)
         return;
     }
 
-    FIXED_12 timerState = timer->type == TIMER_REGULAR ? REG_TM1D : REG_TM2D;
+    // FIXED_12 timerState = timer->type == TIMER_REGULAR ? REG_TM1D : REG_TM2D;
+    FIXED_12 timerState = REG_TM3D;
 
     if (timer->__prevTimerState > timerState) {
         timer->deltatime = (0xffff + timerState) - timer->__prevTimerState; // handle overflow
@@ -130,7 +132,8 @@ void performancePrintAll(void)
     for (int i = 0; i < currentPerformanceId; ++i) {
         PerformanceData perf = performanceData[i];
         if (perf.avgTime) {
-            int shift = perf.timer.type == TIMER_PERF ? 4 : 0;
+            // int shift = perf.timer.type == TIMER_PERF ? 4 : 0;
+            int shift = 0;
             mgba_printf("%s: %f ms (%d samples)", perf.name, fx12ToFloat( fx12div(perf.avgTime, int2fx12(perf.avgSamples)) * 1000 >> shift), perf.avgSamples);
             performanceData[i].avgSamples = 0;
             performanceData[i].avgTime = 0;
@@ -141,6 +144,7 @@ void performancePrintAll(void)
 
 FIXED_12 performanceGetSeconds(const PerformanceData *perfData) 
 {
-    int shift = perfData->timer.type == TIMER_PERF ? 4 : 0;
+    // int shift = perfData->timer.type == TIMER_PERF ? 4 : 0;
+    int shift = 0;
     return perfData->timer.time >> shift;
 }

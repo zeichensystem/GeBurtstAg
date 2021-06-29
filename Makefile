@@ -8,7 +8,8 @@ endif
 
 include $(DEVKITARM)/gba_rules
 
-MGBA := /Applications/mGBA.app/Contents/MacOS/mGBA # for "make run"
+# The mGBA binary "make run":
+MGBA := /Applications/mGBA.app/Contents/MacOS/mGBA 
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -24,8 +25,8 @@ MGBA := /Applications/mGBA.app/Contents/MacOS/mGBA # for "make run"
 #---------------------------------------------------------------------------------
 TARGET		:= $(notdir $(CURDIR))
 BUILD		:= build
-SOURCES		:= source source/scenes source/render asm data
-INCLUDES	:= include $(DEVKITPRO)/libtonc/include/
+SOURCES		:= source source/scenes source/render asm data-models data-audio
+INCLUDES	:= include $(DEVKITPRO)/libtonc/include/ $(CURDIR)/lib/apex-audio-system/build/aas/include/ 
 DATA		:= 
 MUSIC		:=
 
@@ -61,14 +62,14 @@ LDFLAGS	=	-g $(ARCH) -Wl,-Map,$(notdir $*.map)
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -ltonc -lm
-
+LIBS	:= -ltonc -lm -lAAS
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:=	 $(DEVKITPRO)/libtonc/ $(LIBGBA)  #$(CURDIR)/lib/libtonc/
+LIBDIRS	:=	 $(DEVKITPRO)/libtonc/ $(CURDIR)/lib/apex-audio-system/build/aas/
+#$(CURDIR)/lib/libtonc/ $(LIBGBA)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -125,26 +126,31 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-iquote$(CURDIR)/$(dir)) \
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
-.PHONY: $(BUILD) clean run
+.PHONY: $(BUILD) clean run all
+
+# Oh my... We have to $(MAKE) $(BUILD), i.e. make the build target with a new invocation of "make", to "recompute" the SOURCE variable (and everything that depends on it) because
+# sourcefiles are generated in data-audio and data-models by the invocations of "Makefile-Music" and "Makefile-Models" if applicable. 
+# If we don't do this, we get linker errors when we "make" after "make clean" (as the newly generated source files in data-audio and data-models won't be considered then until the next "make" invocation).
+all: 
+	@$(MAKE) -f $(CURDIR)/assets/Makefile-Music
+	@$(MAKE) -f $(CURDIR)/assets/Makefile-Models
+
+	@$(MAKE) $(BUILD)
 
 #---------------------------------------------------------------------------------
-$(BUILD): 
+
+$(BUILD):
 	@[ -d $@ ] || mkdir -p $@ 
-	# $(MAKE) -C $(CURDIR)/lutcalc -f Makefile
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
-
-models: $(CURDIR)/assets/models/*.obj 
-	python3 $(CURDIR)/tools/obj2model.py
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).gba
-	@rm -f $(CURDIR)/lutcalc/lutcalc
-	@rm -f $(CURDIR)/data/*
+	@rm -f $(CURDIR)/data-models/*
+	@rm -f $(CURDIR)/data-audio/*
 
-run: $(BUILD) Makefile
+run: all Makefile
 	$(MGBA) -2 -l 15 $(OUTPUT).gba
 #---------------------------------------------------------------------------------
 else

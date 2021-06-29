@@ -1,8 +1,0 @@
-build
-data
-*.gba
-*.sav
-*.elf
-
-*.pnproj
-.DS_Store

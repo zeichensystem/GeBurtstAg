@@ -48,7 +48,8 @@ void setDispScaleM5Scaled(void)
         .scr_x=0,
         .scr_y=5, // Vertical letterboxing.
         .tex_x=0,
-        .tex_y=0 };
+        .tex_y=0 
+    };
     BG_AFFINE bgaff;
     bg_rotscale_ex(&bgaff, &asx);
     REG_BG_AFFINE[2]= bgaff;
@@ -58,6 +59,17 @@ void resetDispScale(void)
 {
     BG_AFFINE bgaff;
     bg_aff_identity(&bgaff);
+    AFF_SRC_EX asx= {
+        .alpha=0,
+        .sx=int2fx(1),
+        .sy=int2fx(1),
+        .scr_x=0,
+        .scr_y=-5, // Reset Vertical letterboxing.
+        .tex_x=0,
+        .tex_y=0 
+    };
+    bg_rotscale_ex(&bgaff, &asx);
+
     REG_BG_AFFINE[2]= bgaff;
 }
 
@@ -142,7 +154,7 @@ IWRAM_CODE_ARM void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR c
     }
 }
 
-INLINE void drawTriangleWireframe(const RasterTriangle *tri) 
+IWRAM_CODE_ARM void drawTriangleWireframe(const RasterTriangle *tri) 
 { 
     if (!RASTERPOINT_IN_BOUNDS_M5(tri->vert[0]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[1]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[2])) { // We have to clip against the screen.
         for (int j = 0; j < 3; ++j) {
@@ -273,7 +285,8 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
             // const Vec3 b = vecSub(vertsCamSpace[face.vertexIndex[2]], vertsCamSpace[face.vertexIndex[0]]);
             // const Vec3 triNormal = vecCross(b, a);
             // const Vec3 camToTri = vertsCamSpace[face.vertexIndex[2]];
-
+            
+            // Backface culling (with face normals, winding order does not matter):
             const Vec3 triNormal = vecTransformedRot(instanceRotMat, &face.normal);
             const Vec3 camToTri = vecSub(cam->pos, vertsWorldSpace[face.vertexIndex[0]]); 
             if (vecDot(triNormal, camToTri) <= 0) { // If the angle between camera and normal is not between 90 degs and 270 degs, the face is invisible and to be culled.

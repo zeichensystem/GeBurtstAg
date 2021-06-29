@@ -99,7 +99,6 @@ def generate_template(name, mode=None):
 
 
 def generate_scene_c():
-
     cfiles = [scene for scene in pathlib.Path(".").joinpath(SCENE_DIR).glob("*.c")]
     scenes = list()
     for scene in cfiles:
@@ -212,6 +211,8 @@ if __name__ == "__main__":
 
 
 
+
+# NOTE: This was used to find the relevant functions in the source files back when we didn't use the CODEGEN block; we had to check for matching parentheses. Only here for reference. 
 # match = re.search(r"void\s+scenesInit\s*(\s*void\s*)\s*\{", scene_c_text)
 # if not match:
 #     raise ValueError("scene.c does not contain a sceneInit function, abort.")

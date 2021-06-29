@@ -70,8 +70,8 @@ IWRAM_CODE_ARM void twisterSceneUpdate(void)
     timerTick(&timer);
 
     int letterboxTrans =  + fx12ToInt(8 * lu_sin(fx12ToInt(timer.time * TAU)));
-    letterboxTop = 40;
-    letterboxBottom = 120;
+    letterboxTop = 20;
+    letterboxBottom = 130;
     
     for (int i = 0; i < MAX_RENDER_TWISTERS; ++i) {
         int t = fx12ToInt(timer.time *  PI / 2);
@@ -175,6 +175,7 @@ IWRAM_CODE_ARM void twisterSceneDraw(void)
 {
     memset32(vid_page, quad8(CLRIDX_BLACK), 15 * M4_WIDTH/4); // TODO: REMOVE ME (only here for debugging so the fps text does not overdraw).
     memset32(vid_page + letterboxTop * M4_WIDTH / 2, quad8(CLRIDX_PASTEL_BLUE), (letterboxBottom - letterboxTop) * M4_WIDTH/4);
+    m4_rect(0, 0, 240, 20, CLRIDX_RED);
     renderTwisters(twistPtrs, MAX_RENDER_TWISTERS);
 }
 
@@ -203,7 +204,7 @@ static void videoModeInit(void) {
 
 
 void twisterSceneStart(void) {
-    videoModeInit();    
+    videoModeInit();  
     m4_fill(CLRIDX_BLACK);
     timerStart(&timer);
 }
