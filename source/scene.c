@@ -28,7 +28,7 @@ void sceneKeySeqInit(void)
 {
     // The sequence which is used to switch keys in debug mode. 
     const u32 matchSeq[KEY_SEQ_MAX_LEN] = {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, KEY_A}; 
-    const FIXED_12 matchInterval = 1229; // ~0.3 in .12 fixed point. 
+    const FIXED_12 matchInterval = 1229; // ~0.3 in .12 fixed point (unit: seconds). 
     const u32 matchSeqLen = 5;
     sceneSwitchKeySeq = keySeqWatcherNew(matchInterval, matchSeq, matchSeqLen);
 }
@@ -37,25 +37,27 @@ void sceneKeySeqInit(void)
 
 #include "scenes/cubespaceScene.h"
 #include "scenes/testbedScene.h"
+#include "scenes/subwayScene.h"
 #include "scenes/benchmarkScene.h"
 #include "scenes/twisterScene.h"
 #include "scenes/gbaScene.h"
 
-#define SCENE_NUM 5
+#define SCENE_NUM 6
 static Scene scenes[SCENE_NUM];
 
 void scenesInit(void) 
 {
     scenes[0] = sceneNew("cubespaceScene", cubespaceSceneInit, cubespaceSceneStart, cubespaceScenePause, cubespaceSceneResume, cubespaceSceneUpdate, cubespaceSceneDraw);
     scenes[1] = sceneNew("testbedScene", testbedSceneInit, testbedSceneStart, testbedScenePause, testbedSceneResume, testbedSceneUpdate, testbedSceneDraw);
-    scenes[2] = sceneNew("benchmarkScene", benchmarkSceneInit, benchmarkSceneStart, benchmarkScenePause, benchmarkSceneResume, benchmarkSceneUpdate, benchmarkSceneDraw);
-    scenes[3] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
-    scenes[4] = sceneNew("gbaScene", gbaSceneInit, gbaSceneStart, gbaScenePause, gbaSceneResume, gbaSceneUpdate, gbaSceneDraw);
+    scenes[2] = sceneNew("subwayScene", subwaySceneInit, subwaySceneStart, subwayScenePause, subwaySceneResume, subwaySceneUpdate, subwaySceneDraw);
+    scenes[3] = sceneNew("benchmarkScene", benchmarkSceneInit, benchmarkSceneStart, benchmarkScenePause, benchmarkSceneResume, benchmarkSceneUpdate, benchmarkSceneDraw);
+    scenes[4] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
+    scenes[5] = sceneNew("gbaScene", gbaSceneInit, gbaSceneStart, gbaScenePause, gbaSceneResume, gbaSceneUpdate, gbaSceneDraw);
 
     for (int i = 0; i < SCENE_NUM; ++i) {
         scenes[i].init();
     }
-    currentSceneID = 4; // The ID of the initial scene
+    currentSceneID = 2; // The ID of the initial scene
     sceneKeySeqInit();
 }
 

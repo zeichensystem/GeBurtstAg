@@ -1,7 +1,6 @@
 #ifndef TRACKER_H
 #define TRACKER_H
 
-
 #include <tonc.h>
 
 #define NUM_TRACKS 8 // maximum number of different tracks; only one can be played at a time

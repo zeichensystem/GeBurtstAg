@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "twisterScene.h"
+#include "../scene.h"
 #include "../globals.h"
 #include "../commondefs.h"
 #include "../logutils.h"
@@ -141,14 +142,24 @@ IWRAM_CODE_ARM static void renderTwisters(Twister **tw, int num)
                 x2 = center_x + fx12ToInt(fx12mul(fx12mul(tw[idx]->amp, sinval), tw[idx]->zInv));
                 
                 CLR_IDX clr;
-                if (x <= 2) {
-                    clr = CLRIDX_PINKSHADE_START + x;
-                } else {
-                    clr = CLRIDX_PINKSHADE_START + 2 + (3 - x);
+                if (timer.time < int2fx12(4)) { // Pink. 
+                    if (x <= 2) {
+                        clr = CLRIDX_PINKSHADE_START + x;
+                    } else {
+                        clr = CLRIDX_PINKSHADE_START + 2 + (3 - x);
+                    }
+                } else { // Rainbow. 
+                    if (x <= 2) {
+                        clr = CLRIDX_RED + x;
+                    } else {
+                        clr = CLRIDX_RED + 2 + (6 - x);
+                    }
                 }
+
                 if (x1 < x2) {
                     m4_hline_nonorm(x1, y, x2, clr);
                 }
+
             }
         }
     }

@@ -51,6 +51,8 @@ IWRAM_CODE_ARM void matrix4x4createRotZ(FIXED matrix[16], ANGLE_FIXED_12 angle);
 IWRAM_CODE_ARM void matrix4x4Mul(FIXED a[16], const FIXED b[16]);
 IWRAM_CODE_ARM void matrix4x4createMul(const FIXED a[16], const FIXED b[16], FIXED result[16]);
 
+IWRAM_CODE_ARM FIXED lerpSmooth(FIXED start, FIXED end, FIXED_12 t);
+
 void mathInit(void);
 
 INLINE FIXED_12 int2fx12(int num) {

@@ -8,7 +8,7 @@ endif
 
 include $(DEVKITARM)/gba_rules
 
-# The mGBA binary "make run":
+# The mGBA binary for "make run":
 MGBA := /Applications/mGBA.app/Contents/MacOS/mGBA 
 
 #---------------------------------------------------------------------------------

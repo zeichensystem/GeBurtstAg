@@ -307,6 +307,19 @@ void matrix4x4Transpose(FIXED mat[16])
     }
 }
 
+FIXED lerpSmooth(FIXED start, FIXED end, FIXED_12 t)
+{
+    if (t >= int2fx12(1)) {
+        return end;
+    } else if (t < 0) {
+        return start;
+    }
+    // cf. https://sol.gfxile.net/interpolation/ (last retrieved 2021-07-09)
+    t = fx12mul(fx12mul(t, t), (int2fx12(3) - fx12mul(int2fx12(2), t)) ); // Smoothstep.
+    return fx12Tofx( fx12mul(int2fx12(1) - t, fx2fx12(start)) + fx12mul(t, fx2fx12(end)) );
+}
+
+
 
 /* 
     The following is not my code and belongs to its respective author. (I simply converted it to use fixed point instead of floats.)

@@ -51,6 +51,7 @@ ModelInstance* modelInstanceAdd(ModelInstancePool *pool,  Model model, const Vec
     new->state.roll = roll;
     new->state.scale.x = scale->x; new->state.scale.y = scale->y; new->state.scale.z = scale->z;
     new->state.shading = shading;
+    new->state.backfaceCulling = true;
 
     pool->instanceCount++;
     return new;

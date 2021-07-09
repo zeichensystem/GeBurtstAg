@@ -68,6 +68,7 @@ class Model:
 
             elif line_toks[0] == "usemtl": # Face material
                 current_mtl = "".join(line_toks[1:])
+
             elif line.startswith("vn"): # Normals:
                 if (len(line_toks) != 4):
                     raise Model.ModelParseError(f"Problem in {filename} on line {line_num+1}: Vertex-normal has {len(line_toks) - 1} values, but must have exactly 3.")

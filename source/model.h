@@ -76,6 +76,7 @@ typedef struct ModelInstance { // Different Instances share their vertex/face da
             ANGLE_FIXED_12 yaw, pitch, roll;
             PolygonShadingType shading;
             FIXED camSpaceDepth;
+            bool backfaceCulling;
         }; 
     } ALIGN4 state;
 

@@ -280,6 +280,9 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
         // Calculate lightDir and attenuation (which don't depend on the faces, only on the instance) so we don't have to re-compute them redundantly in the inner loop over the faces.
         INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION();
             
+
+        const bool backfaceCulling = instance->state.backfaceCulling;
+
         for (int faceNum = 0; faceNum < instance->state.mod.numFaces; ++faceNum) { // For each face (triangle, really) of the ModelInstace. 
             const Face face = instance->state.mod.faces[faceNum];
 
@@ -291,10 +294,13 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
             
             // Backface culling (with face normals, winding order does not matter):
             const Vec3 triNormal = vecTransformedRot(instanceRotMat, &face.normal);
-            const Vec3 camToTri = vecSub(cam->pos, vertsWorldSpace[face.vertexIndex[0]]); 
-            if (vecDot(triNormal, camToTri) <= 0) { // If the angle between camera and normal is not between 90 degs and 270 degs, the face is invisible and to be culled.
-                continue;
+            if (backfaceCulling) {
+                const Vec3 camToTri = vecSub(cam->pos, vertsWorldSpace[face.vertexIndex[0]]); 
+                if (vecDot(triNormal, camToTri) <= 0) { // If the angle between camera and normal is not between 90 degs and 270 degs, the face is invisible and to be culled.
+                    continue;
+                }
             }
+
 
             RasterTriangle screenTri; 
             for (int i = 0; i < 3; ++i) {
