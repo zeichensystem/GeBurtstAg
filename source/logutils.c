@@ -9,32 +9,36 @@
 #include "globals.h"
 #include "timer.h"
 
-// mgba_log and mgba_printf by Nick Sells/adverseengineer: https://github.com/adverseengineer/libtonc/blob/master/src/tonc_mgba.c
-// (Modified by me.)
+// mgba_printf and the associated defines and enums by Nick Sells/adverseengineer: https://github.com/adverseengineer/libtonc/blob/master/include/tonc_mgba.h (last retrieved 2021-07-09)
+// (Modified by myself to always use LOG_INFO for ease of use)
 
-void mgba_log(const u32 level, const char* str) 
-{
-    REG_LOG_ENABLE = 0xC0DE;
-    u32 chars_left = strlen(str);
+// --------------------------------------------------------------------
+// STRUCTS
+// --------------------------------------------------------------------
 
-    while(chars_left) { //splits the message into 256-char log entries
-        u32 chars_to_write = min(chars_left, LOG_MAX_CHARS_PER_LINE);
 
-        memcpy(REG_LOG_STR, str, chars_to_write);
-        REG_LOG_LEVEL = level; //every time this is written to, mgba creates a new log entry
+// --------------------------------------------------------------------
+// MACROS
+// --------------------------------------------------------------------
 
-        str += chars_to_write;
-        chars_left -= chars_to_write;
-    }
-}
+#define REG_LOG_ENABLE          *(vu16*) 0x4FFF780
+#define REG_LOG_LEVEL           *(vu16*) 0x4FFF700
 
-void mgba_printf(const char* fmt, ...) 
-{
+// --------------------------------------------------------------------
+// INLINES
+// --------------------------------------------------------------------
+
+//! Outputs \a fmt formatted with varargs to mGBA's logger with \a level priority
+void mgba_printf(const char* fmt, ...) {
+	REG_LOG_ENABLE = 0xC0DE;
+	REG_LOG_LEVEL = LOG_INFO;
+
 	va_list args;
 	va_start(args, fmt);
-	char buf[LOG_MAX_CHARS_PER_LINE];
-	vsnprintf(buf, LOG_MAX_CHARS_PER_LINE, fmt, args);
-	mgba_log(LOG_INFO, buf);
+
+	char* const log = (char*) 0x4FFF600;
+	vsnprintf(log, 0x100, fmt, args);
+
 	va_end(args);
 }
 
