@@ -301,7 +301,6 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
                 }
             }
 
-
             RasterTriangle screenTri; 
             for (int i = 0; i < 3; ++i) {
                 screenTri.vert[i] = vertsProjected[face.vertexIndex[i]];

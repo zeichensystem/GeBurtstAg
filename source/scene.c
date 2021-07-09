@@ -68,6 +68,7 @@ void sceneSwitchTo(SceneID sceneID)
 {
     assertion(sceneID < SCENE_NUM, "scene.c: sceneSwitchTo: sceneID in range");
 
+    scenes[currentSceneID].draw();
     scenes[currentSceneID].pause();
     currentSceneID = sceneID;
 

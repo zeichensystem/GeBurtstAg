@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "cubespaceScene.h"
+#include "../scene.h"
 #include "../globals.h"
 #include "../camera.h"
 #include "../render/draw.h"
@@ -73,6 +74,10 @@ void cubespaceSceneUpdate(void)
         camera.pitch = deg2fxangle(4);
         camera.yaw = deg2fxangle(2);
         timerTick(&timer);
+
+        if (timer.time > int2fx12(5)) {
+                sceneSwitchTo(TESTBEDSCENE);
+        }
 }
 
 void cubespaceSceneDraw(void) 

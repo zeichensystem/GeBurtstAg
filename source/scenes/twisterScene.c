@@ -108,6 +108,7 @@ INLINE void m4_hline_nonorm(int x1, int y, int x2, u32 clr)
 
 IWRAM_CODE_ARM static void renderTwisters(Twister **tw, int num) 
 {
+    // cf. https://en.wikipedia.org/wiki/Insertion_sort (last retrieved 2021-07-09)
     for (int i = 1; i < num; ++i) {
         for (int j = i; j > 0 && tw[j]->z > tw[j - 1]->z ; --j) { // We sort descending (big z values here mean farther in the background, i.e. those twisters are drawn first).
             Twister *tmp;
@@ -142,7 +143,7 @@ IWRAM_CODE_ARM static void renderTwisters(Twister **tw, int num)
                 x2 = center_x + fx12ToInt(fx12mul(fx12mul(tw[idx]->amp, sinval), tw[idx]->zInv));
                 
                 CLR_IDX clr;
-                if (timer.time < int2fx12(4)) { // Pink. 
+                if (timer.time < int2fx12(9)) { // Pink. 
                     if (x <= 2) {
                         clr = CLRIDX_PINKSHADE_START + x;
                     } else {
@@ -214,7 +215,7 @@ static void videoModeInit(void) {
 
 void twisterSceneStart(void) {
     videoModeInit();  
-    m4_fill(CLRIDX_BLACK);
+    twisterSceneUpdate();
     timerStart(&timer);
 }
 

@@ -41,6 +41,10 @@ void gbaSceneUpdate(void)
     camera.pos.z = 80 * sinFx(timer.time * 5);
     camera.pos.x =  200 * cosFx(timer.time * 5);
     camera.lookAt = (Vec3){0,0,0};
+
+    if (timer.time >= int2fx12(8)) {
+        sceneSwitchTo(CUBESPACESCENE);
+    }
 }
 
 INLINE void beGay(void) 

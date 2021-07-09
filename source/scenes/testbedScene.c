@@ -18,6 +18,8 @@
 #define NUM_CUBES 9
 #define NUM_CUBES_SQRT 3
 
+#define RELEASE
+
 EWRAM_DATA static ModelInstance __cubeBuffer[NUM_CUBES];
 static ModelInstancePool cubePool;
 
@@ -39,9 +41,7 @@ static int perfDrawID, perfProjectID, perfSortID;
 void testbedSceneInit(void) 
 {     
         headModelInit(); 
-        // suzanneModelInit();
-
-        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, CAMERA_VERTICAL_FOV_43_DEG, int2fx(1), int2fx(42), g_mode);
+        camera = cameraNew((Vec3){.x=int2fx(0), .y=int2fx(0), .z=int2fx(20)}, CAMERA_VERTICAL_FOV_43_DEG, int2fx(1), int2fx(128), g_mode);
         timer = timerNew(TIMER_MAX_DURATION, TIMER_REGULAR);
         perfDrawID = performanceDataRegister("Drawing");
         perfProjectID = performanceDataRegister("3d-math");
@@ -95,6 +95,8 @@ void testbedSceneUpdate(void)
         weirdHead2->state.pos.y = fxmul(cosFx(fx12mul(timer.time, deg2fxangle(320))), int2fx(1)) + int2fx(4);
 
 
+        // No user controls in the demo. (We have no time so we just repurpose the debugging scene for additional content...)
+        #ifndef RELEASE
         // Calculate the point to lookAt from the heading of the player/camera.
         playerAngle += (-key_tri_shoulder() * (timer.deltatime >>1));
         FIXED rotmat[16];
@@ -107,37 +109,55 @@ void testbedSceneUpdate(void)
         camera.pos.z += fxmul(velX, right.z) + fxmul(velZ, playerHeading.z );
         camera.pos.y += fxmul(int2fx(key_tri_fire()), fx12Tofx(timer.deltatime << 4));
         camera.lookAt = (Vec3){.x = camera.pos.x + playerHeading.x, .y = camera.pos.y + playerHeading.y, .z = camera.pos.z + playerHeading.z};
-
         if (key_held(KEY_START)) {
                 camera.lookAt = (Vec3){.x= headPool.instances[0].state.pos.x, .y=0, .z=headPool.instances[0].state.pos.z};
         }
+        #else
+        camera.lookAt.x = weirdHead2->state.pos.x;
+        camera.lookAt.z = weirdHead2->state.pos.z;
+        camera.lookAt.y = 0;
+
+        FIXED_12 alpha = fx12div(timer.time, int2fx12(8));
+        camera.pos.y = lerpSmooth(int2fx(8), int2fx(-8), alpha >> 1);
+        camera.pos.x = lerpSmooth(int2fx(-20), int2fx(12), alpha);
+        camera.pos.z = lerpSmooth(int2fx(32), int2fx(-8), alpha);
+        camera.roll += fx12mul(timer.deltatime,  deg2fxangle(fx2int(lerpSmooth(int2fx(10), int2fx(100), alpha >> 1))));
+
+
+        if (timer.time > int2fx12(14)) {
+                sceneSwitchTo(TWISTERSCENE);
+        }
+
+        #endif
 }
 
 bool toggle = false;
 void testbedSceneDraw(void) 
 {
         drawBefore(&camera);
-        memset32(vid_page, dup16(CLR_BLACK), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
+        m5ScaledFill(CLR_BLACK);
 
-        ModelDrawLightingData lightDataPoint = {.type=LIGHT_POINT, .light.point=&camera.pos, .attenuation=&lightAttenuation100};
+        ModelDrawLightingData lightDataPoint = {.type=LIGHT_POINT, .light.point=&camera.pos, .attenuation=&lightAttenuation160};
         ModelDrawLightingData lightDataDir = {.type=LIGHT_DIRECTIONAL, .light.directional=&lightDirection, .attenuation=NULL};
 
+        ModelInstancePool pools[2] = {headPool, cubePool};
+        #ifndef RELEASE
         if (key_hit(KEY_SELECT)) {
                 toggle = !toggle;
         }
-
-        ModelInstancePool pools[2] = {headPool, cubePool};
         if (!toggle)
                 drawModelInstancePools(pools, 2, &camera, lightDataDir);
-
         else
                 drawModelInstancePools(pools, 2, &camera, lightDataPoint);
-
+        #else
+                drawModelInstancePools(pools, 2, &camera, lightDataPoint);
+        #endif
 }
 
 void testbedSceneStart(void) 
 {
         videoM5ScaledInit();
+        testbedSceneUpdate();
         timerStart(&timer);
 }
 

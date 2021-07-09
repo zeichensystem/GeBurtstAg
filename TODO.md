@@ -7,7 +7,8 @@
 - [ ] Affine texture mapping (cf. fatmap.txt)
 - [ ] Subpixel-accuracy (cf. fatmap2.txt)
 
-## Implementation details and Bugfixes       
+## Implementation details and Bugfixes     
+- [ ] Fix ordering table (Seriously, the drawing order is broken for non-trivial .obj files)  
 - [ ] Proper near-plane clipping 
 - [ ] Use division LUTs for triangle-filling (integers) and for perspective divides (fixed point)
 - [ ] Broadphase with bounding spheres for model-instances (and option for models with fewer faces which get activated if their distance to the camera is large).
