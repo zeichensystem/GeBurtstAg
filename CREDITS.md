@@ -1,5 +1,5 @@
 # Credits
-If I should have forgotten anything or anyone, I apologise in advance. Please let me know if possible so I can recify it. Thanks. 
+If I should have forgotten anything or anyone, I apologise in advance. Please let me know if possible so I can rectify it. Thanks. 
 
 ## Libraries 
 
@@ -77,6 +77,11 @@ cf. <https://github.com/JoaoBaptMG/gba-modern/blob/master/source/math/udiv32.s> 
 My implementation is broken, please refer to the original.
 
 cf. <http://psx.arthus.net/sdk/Psy-Q/DOCS/TECHNOTE/ordtbl.pdf> (last retrieved 2021-07-09)
+
+### *Object Pool* (concept)
+It's not really a good use of this pattern in this case...
+
+cf. https://gameprogrammingpatterns.com/object-pool.html (last retrieved: 2021-05-11)
 
 
 ### *Cohen-Sutherland* Line clipping

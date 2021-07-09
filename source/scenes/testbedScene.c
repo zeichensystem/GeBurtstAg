@@ -124,7 +124,7 @@ void testbedSceneUpdate(void)
         camera.roll += fx12mul(timer.deltatime,  deg2fxangle(fx2int(lerpSmooth(int2fx(10), int2fx(100), alpha >> 1))));
 
 
-        if (timer.time > int2fx12(14)) {
+        if (timer.time > int2fx12(16)) {
                 sceneSwitchTo(TWISTERSCENE);
         }
 

@@ -322,7 +322,7 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
 
             FACE_CALC_COLOR();
             screenTri.shading = instance->state.shading;
-            screenTri.centroidZ =  fxdiv(vertsCamSpace[face.vertexIndex[0]].z + vertsCamSpace[face.vertexIndex[1]].z + vertsCamSpace[face.vertexIndex[2]].z, int2fx(3)); 
+            screenTri.centroidZ = fxdiv(vertsCamSpace[face.vertexIndex[0]].z + vertsCamSpace[face.vertexIndex[1]].z + vertsCamSpace[face.vertexIndex[2]].z, int2fx(3)); 
             assertion(screenTriangleCount < DRAW_MAX_TRIANGLES, "draw.c: drawModelInstances: screenTriangleCount < DRAW_MAX_TRIANGLES");
             screenTriangles[screenTriangleCount++] = screenTri;
             otInsert(screenTriangles + (screenTriangleCount - 1));

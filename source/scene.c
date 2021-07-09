@@ -5,7 +5,7 @@
 #include "globals.h"
 #include "keyseq.h"
 
-#define USER_SCENE_SWITCH
+// #define USER_SCENE_SWITCH
 
 static int currentSceneID;
 static KeySeqWatcher sceneSwitchKeySeq;
