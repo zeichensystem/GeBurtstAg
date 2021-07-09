@@ -3,7 +3,7 @@ import pathlib
 import argparse
 import textwrap
 
-# In respect to the project directory.
+# With respect to the project directory.
 SOURCE_DIR = "source/"
 SCENE_DIR = "source/scenes/"
 

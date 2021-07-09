@@ -4,6 +4,7 @@
 
 #define SCENE_NAME_MAX_LEN 64
 
+// The scene IDs are visible to each scene (#include "../scene.h") and can be used as arguments to "sceneSwitchTo".
 typedef enum SceneID {CUBESPACESCENE=0, TESTBEDSCENE, BENCHMARKSCENE, TWISTERSCENE, GBASCENE, } SceneID;
 
 typedef struct Scene {
@@ -20,6 +21,8 @@ typedef struct Scene {
 void scenesInit(void);
 void scenesDispatchUpdate(void);
 void scenesDispatchDraw(void);
+void sceneSwitchTo(SceneID sceneID); 
+
 
 
 #endif

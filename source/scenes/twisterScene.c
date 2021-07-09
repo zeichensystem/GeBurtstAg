@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #include "twisterScene.h"
 #include "../globals.h"
 #include "../commondefs.h"
@@ -25,7 +24,7 @@ static Twister *twistPtrs[MAX_RENDER_TWISTERS];
 
 
 #define RAINBOW_SIZE 6
-#define TWISTER_PAL_SIZE 14
+#define TWISTER_PAL_SIZE 17
 static COLOR pal[TWISTER_PAL_SIZE];
 
 typedef enum {
@@ -40,13 +39,18 @@ typedef enum {
 
     CLRIDX_PASTEL_BLUE,
     CLRIDX_PINKSHADE_START,
-    CLRIDX_PINKSHADE_END=13
+    CLRIDX_PINKSHADE_END=13, 
+
+    CLRIDX_PROUD_BLUE,
+    CLRIDX_PROUD_PINK,
+    CLRIDX_WHITE,
 } CLR_IDX;
 
 static int radiusX = 42;
 static int radiusZ = 20;
-static int letterboxTop = 40;
-static int letterboxBottom = 120;
+
+static int letterboxTop = 32;
+static int letterboxBottom = 160 - 32;
 
 void twisterSceneInit(void) 
 {     
@@ -68,10 +72,7 @@ void twisterSceneInit(void)
 IWRAM_CODE_ARM void twisterSceneUpdate(void) 
 {
     timerTick(&timer);
-
-    int letterboxTrans =  + fx12ToInt(8 * lu_sin(fx12ToInt(timer.time * TAU)));
-    letterboxTop = 20;
-    letterboxBottom = 130;
+    // int letterboxTrans = fx12ToInt(8 * lu_sin(fx12ToInt(timer.time * TAU)));
     
     for (int i = 0; i < MAX_RENDER_TWISTERS; ++i) {
         int t = fx12ToInt(timer.time *  PI / 2);
@@ -149,33 +150,26 @@ IWRAM_CODE_ARM static void renderTwisters(Twister **tw, int num)
                     m4_hline_nonorm(x1, y, x2, clr);
                 }
             }
-          
-            // for (int x = 0; x < tw[idx]->numTwists; ++x) {
-            //     int x1 = x_vals[x];
-            //     int x2 = x_vals[x+1 < tw[idx]->numTwists ? x+1 : 0 ];
-            //     CLR_IDX clr;
-            //     if (!key_held(KEY_START)) {
-            //         if (x <= 2) {
-            //             clr = CLRIDX_PINKSHADE_START + x;
-            //         } else {
-            //             clr = CLRIDX_PINKSHADE_START + 2 + (3 - x);
-            //         }
-            //     } else {
-            //         clr = x + CLRIDX_RED <= CLRIDX_PURPLE ? x + CLRIDX_RED : CLRIDX_RED;
-            //     }
-            //     if (x1 < x2) {
-            //         m4_hline_nonorm(x1, y, x2, clr );
-            //     }
-            // }
         }
     }
 }
 
+INLINE void beTwans(void) 
+{
+    int outerBandSize = 32;
+    m4_rect(0, 0, 240, outerBandSize, CLRIDX_PROUD_BLUE);
+    m4_rect(0, outerBandSize, 240, outerBandSize * 2, CLRIDX_PROUD_PINK);
+    
+    m4_rect(0, outerBandSize * 2, 240, outerBandSize * 2 + outerBandSize, CLRIDX_WHITE);
+
+    m4_rect(0, 160 - outerBandSize * 2, 240, 160 - outerBandSize * 2 + outerBandSize, CLRIDX_PROUD_PINK);
+    m4_rect(0, 160 - outerBandSize, 240, 160, CLRIDX_PROUD_BLUE);
+}
+
 IWRAM_CODE_ARM void twisterSceneDraw(void) 
 {
-    memset32(vid_page, quad8(CLRIDX_BLACK), 15 * M4_WIDTH/4); // TODO: REMOVE ME (only here for debugging so the fps text does not overdraw).
-    memset32(vid_page + letterboxTop * M4_WIDTH / 2, quad8(CLRIDX_PASTEL_BLUE), (letterboxBottom - letterboxTop) * M4_WIDTH/4);
-    m4_rect(0, 0, 240, 20, CLRIDX_RED);
+    // memset32(vid_page + letterboxTop * M4_WIDTH / 2, quad8(CLRIDX_PASTEL_BLUE), (letterboxBottom - letterboxTop) * M4_WIDTH/4);
+    beTwans();
     renderTwisters(twistPtrs, MAX_RENDER_TWISTERS);
 }
 
@@ -198,6 +192,10 @@ static void videoModeInit(void) {
         pal[11] = RGB15_SAFE(25, 0, 19);
         pal[12] = RGB15_SAFE(15, 0, 11);
         pal[13] = RGB15_SAFE(5, 0, 4);
+
+        pal[14] = RGB15(10, 25, 31);
+        pal[15] = RGB15(30, 20, 22);
+        pal[16] = RGB15(31, 31, 31);
 
         setM4Pal(pal, TWISTER_PAL_SIZE);
 }

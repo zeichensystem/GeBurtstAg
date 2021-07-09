@@ -23,7 +23,7 @@ static int screenTriangleCount = 0;
 /*
     With an ordering table, we can avoid expensive sorting. Basically just an array containing linked lists for each depth value.
     We sacrifice memory usage (and accuracy, i.e. Polygons which are a certain cutoff distance from each other are drawn in indeterminate order, but it should not matter) for speed. 
-    cf. http://psx.arthus.net/sdk/Psy-Q/DOCS/TECHNOTE/ordtbl.pdf
+    cf. http://psx.arthus.net/sdk/Psy-Q/DOCS/TECHNOTE/ordtbl.pdf (last retrieved 2021-07-09)
 */
 #define OT_SIZE 512
 // We assume an .8 fixed point representation of our depth values; we calculate the index by converting to .1 fixed point, which means at a z-value of OT_SIZE/2 (integer) we have a index of OT_SIZE   
@@ -64,7 +64,7 @@ void resetDispScale(void)
         .sx=int2fx(1),
         .sy=int2fx(1),
         .scr_x=0,
-        .scr_y=-5, // Reset Vertical letterboxing.
+        .scr_y=0, // (TODO: this was -5 "to reset vertical letterboxing", no idea why I did that...)
         .tex_x=0,
         .tex_y=0 
     };
@@ -104,7 +104,7 @@ void videoM4Init(void)
     resetDispScale();
 }
 
-void m5ScaledFill(COLOR clr) 
+IWRAM_CODE_ARM void m5ScaledFill(COLOR clr) 
 {
     memset32(vid_page, dup16(clr), ((M5_SCALED_H-0) * M5_SCALED_W)/2);
 }
@@ -156,6 +156,7 @@ IWRAM_CODE_ARM void drawPoints(const Camera *cam, Vec3 *points, int num, COLOR c
 
 IWRAM_CODE_ARM void drawTriangleWireframe(const RasterTriangle *tri) 
 { 
+    // (This function is pretty slow for some reason. FIXME please.)
     if (!RASTERPOINT_IN_BOUNDS_M5(tri->vert[0]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[1]) || !RASTERPOINT_IN_BOUNDS_M5(tri->vert[2])) { // We have to clip against the screen.
         for (int j = 0; j < 3; ++j) {
             int nextIdx = (j + 1) < 3 ? j + 1 : 0;
@@ -175,7 +176,7 @@ IWRAM_CODE_ARM void drawTriangleWireframe(const RasterTriangle *tri)
 
 
 /* 
-    C does not have nested functions, but we got macros! 
+    C does not have closures, but we got macros! 
     I'm sorry. 
 */
 #define INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION()                                                                                                                            \
@@ -232,6 +233,10 @@ INLINE void otInsert(RasterTriangle *t)
     orderingTable[idx] = t;
 }     
 
+// We put it outside of "modelInstancesPrepareDraw" to not exhaust the stack (I think). Will be slower I think. Ugh.
+static EWRAM_DATA Vec3 vertsCamSpace[MAX_MODEL_VERTS];
+static EWRAM_DATA Vec3 vertsWorldSpace[MAX_MODEL_VERTS];
+static EWRAM_DATA RasterPoint vertsProjected[MAX_MODEL_VERTS];
 /* 
     Performs model to camera space transformations, perspective projection, and shading/lighting calculations.
     Calculates the screen-space triangles which can be drawn later. We put them into the ordering table, so we don't have to sort them. 
@@ -246,9 +251,7 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
         // TODO: Insert bounding-sphere culling here.
         FIXED instanceRotMat[16];
         matrix4x4createYawPitchRoll(instanceRotMat, instance->state.yaw, instance->state.pitch, instance->state.roll);
-        Vec3 vertsCamSpace[MAX_MODEL_VERTS];
-        Vec3 vertsWorldSpace[MAX_MODEL_VERTS];
-        RasterPoint vertsProjected[MAX_MODEL_VERTS];
+
 
         for (int i = 0; i < instance->state.mod.numVerts; ++i) {
             // Model space to world space:
@@ -314,7 +317,7 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
 
             FACE_CALC_COLOR();
             screenTri.shading = instance->state.shading;
-            screenTri.centroidZ = vertsCamSpace[face.vertexIndex[0]].z; // TODO HACK: That's not the actual centroid (we'd need an expensive division for that), but this is good enough for small faces.
+            screenTri.centroidZ =  fxdiv(vertsCamSpace[face.vertexIndex[0]].z + vertsCamSpace[face.vertexIndex[1]].z + vertsCamSpace[face.vertexIndex[2]].z, int2fx(3)); 
             assertion(screenTriangleCount < DRAW_MAX_TRIANGLES, "draw.c: drawModelInstances: screenTriangleCount < DRAW_MAX_TRIANGLES");
             screenTriangles[screenTriangleCount++] = screenTri;
             otInsert(screenTriangles + (screenTriangleCount - 1));
@@ -326,12 +329,13 @@ IWRAM_CODE_ARM static void modelInstancesPrepareDraw(Camera* cam, ModelInstance 
 #undef INSTANCE_CALC_LIGHTDIR_AND_ATTENUATION
 #undef FACE_CALC_COLOR
 
-static int triangleDepthCmp(const void *a, const void *b) 
-{
-        RasterTriangle *triA = (RasterTriangle*)a;
-        RasterTriangle *triB = (RasterTriangle*)b;
-        return triA->centroidZ - triB->centroidZ; // Smaller/"more negative" z values mean the triangle is farther away from the camera.
-}
+// static int triangleDepthCmp(const void *a, const void *b) 
+// { 
+// (We don't need to sort the triangles, we use an ordering table. Just left as a comment for reference.)
+//         RasterTriangle *triA = (RasterTriangle*)a;
+//         RasterTriangle *triB = (RasterTriangle*)b;
+//         return triA->centroidZ - triB->centroidZ; // Smaller/"more negative" z values mean the triangle is farther away from the camera.
+// }
 
 IWRAM_CODE_ARM void drawModelInstancePools(ModelInstancePool *pools, int numPools, Camera *cam, ModelDrawLightingData lightDat) 
 {
@@ -365,14 +369,16 @@ IWRAM_CODE_ARM void drawModelInstancePools(ModelInstancePool *pools, int numPool
     }
     skipOT:;
 
-    
     performanceEnd(perfTotal);
+    
+    #ifdef DEBUG_PRINT
     char dbg[64];
     snprintf(dbg, sizeof(dbg),  "tris: %d", screenTriangleCount);
     m5_puts(8, 24, dbg, CLR_FUCHSIA);
+    #endif
 }
 
-    // RasterTriangle tri;
+    // RasterTriangle tri; // Debug. 
     // tri.color = CLR_WHITE;
     // tri.vert[0] = (RasterPoint){.x=0, .y=0};
     // tri.vert[1] = (RasterPoint){.x=60, .y=100};

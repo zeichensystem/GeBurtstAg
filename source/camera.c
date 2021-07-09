@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <tonc_bios.h>
@@ -70,7 +68,7 @@ static void cameraComputeRotMatrix(Camera *cam, FIXED result[16])
 void cameraComputeWorldToCamSpace(Camera *cam) 
 {
     matrix4x4setIdentity(cam->world2cam);
-    // Compute new basis of the matrix from out lookAt point:
+    // Compute new basis of the matrix from our lookAt point:
     Vec3 forward = vecUnit(vecSub(cam->pos, cam->lookAt));
     Vec3 tmp = {.x = 0, .y = int2fx(1), .z =0};
     Vec3 right; 
@@ -87,7 +85,6 @@ void cameraComputeWorldToCamSpace(Camera *cam)
     }
     matrix4x4SetBasis(cam->world2cam, right, up, forward);
 
-    // Compute rotation matrix_ 
     FIXED rotmat[16];
     cameraComputeRotMatrix(cam, rotmat);
     matrix4x4Mul(cam->world2cam, rotmat);
@@ -96,18 +93,19 @@ void cameraComputeWorldToCamSpace(Camera *cam)
     // (The transposition of square orthonormal matrices is equivalent to their inversion. If something goes wrong, our matrix is not orthonormal; try the numerical solution.)
     matrix4x4Transpose(cam->world2cam); 
 
-    // Compute translation matrix and put it into 'transMat'
+    // Compute translation matrix and put it into 'transMat'.
     FIXED transMat[16];
     matrix4x4setIdentity(transMat);
     matrix4x4SetTranslation(transMat, (Vec3){.x=-cam->pos.x, .y=-cam->pos.y, .z=-cam->pos.z} ); 
 
-    // Post multiply the translation matrix with the rotation matrix.
+    // Post-multiply the translation matrix with the rotation matrix.
     matrix4x4Mul(cam->world2cam, transMat); // world2cam' = world2cam  * transMat 
 }
 
 
 void cameraComputePerspectiveMatrix(Camera *cam) 
 { 
+    // cf. https://cg.informatik.uni-freiburg.de/course_notes/graphics_04_projection.pdf (last retrieved 2021-07-09)
     FIXED near = cam->near;
     FIXED far = cam->far;
     FIXED top =  fxmul(float2fx(tan(fx2float(cam->fov) / 2. )), near);
@@ -134,7 +132,7 @@ void cameraComputePerspectiveMatrix(Camera *cam)
     memcpy(cam->viewport2imageMat, viewport2image, sizeof(viewport2image));
 
     // We can ignore fxdiv(right + left, right - left) in the symmetric case where right == -left and top == -right.
-    //  We use the following variables to project/transform without matrices (more efficient, less convenient).
+    // We use the following variables to project/transform without matrices (more efficient, less convenient).
     cam->perspFacX = persp[0];
     cam->perspFacY = persp[5];
 

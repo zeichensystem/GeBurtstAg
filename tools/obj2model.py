@@ -101,7 +101,7 @@ class Model:
                 if len(line_toks) != 4:
                     raise Model.ModelParseError(f"Problem in {filename} on line {line_num+1}: Face has {len(line_toks) - 1} vertices, but must have exactly 3 (only tris are supported for now, did you triangulate your self ?).")
                 face = Model.Face()
-                if current_mtl != "":
+                if current_mtl and current_mtl != "none": # FIXME: The != "none" check is potentially bad (what if someone names a material none?) Investigate why...
                     face.color = self.materials[current_mtl]
 
                 faceHasNormal = False
@@ -145,8 +145,8 @@ class Model:
         #endif
         """)
         # Implementation/data file:
-        verts_string = f"EWRAM_DATA Vec3 {self.name}Verts[{len(self.verts)}] = {{"
-        faces_string = f"EWRAM_DATA Face {self.name}Faces[{len(self.faces)}] = {{"
+        verts_string = f"const Vec3 {self.name}Verts[{len(self.verts)}] = {{"
+        faces_string = f"const Face {self.name}Faces[{len(self.faces)}] = {{"
         model_string = f"Model {self.name}Model;" 
         model_initfun= f"void {self.name}ModelInit(void) {{ {self.name}Model = modelNew({self.name}Verts, {self.name}Faces, {len(self.verts)}, {len(self.faces)}); }} "
 

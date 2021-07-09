@@ -5,7 +5,6 @@
 #include "globals.h"
 #include "keyseq.h"
 
-#define SHOW_DEBUG 
 #define USER_SCENE_SWITCH
 
 static int currentSceneID;
@@ -63,9 +62,9 @@ void scenesInit(void)
 // !CODEGEN_END   
 
 
-void sceneSwitchTo(int sceneID) 
+void sceneSwitchTo(SceneID sceneID) 
 {
-    assertion(sceneID >= 0 && sceneID < SCENE_NUM, "scene.c: sceneSwitchTo: sceneID in range");
+    assertion(sceneID < SCENE_NUM, "scene.c: sceneSwitchTo: sceneID in range");
 
     scenes[currentSceneID].pause();
     currentSceneID = sceneID;
@@ -132,7 +131,7 @@ void scenesDispatchDraw(void)
 
     scenes[currentSceneID].draw();
 
-    #ifdef SHOW_DEBUG
+    #ifdef DEBUG_PRINT
     int fps = getFps();
     char dbg[64];
     snprintf(dbg, sizeof(dbg),  "FPS: %d", fps);

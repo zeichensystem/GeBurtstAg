@@ -78,7 +78,7 @@ int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance)
 }
 
 
-Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces) 
+Model modelNew(const Vec3 *verts, const Face *faces, int numVerts, int numFaces) 
 {
     assertion(numVerts <= MAX_MODEL_VERTS, "model.c: modelNew: numVert <= MAX");
     assertion(numFaces <= MAX_MODEL_FACES, "model.c: modelNew: numFaces <= MAX");

@@ -6,8 +6,8 @@
 #include "../raster_geometry.h"
 
 /*  
-    Credits of the triangle rasterisation code: Mats Byggmastar (a.k.a. MRI / Doomsday). 
-    who described it in his article "Fast affine texture mapping (fatmap.txt)". [1]
+    Credits of the triangle rasterisation code: Mats Byggmastar (a.k.a. MRI / Doomsday)
+    who described it in their article "Fast affine texture mapping (fatmap.txt)".
     I adapted it to draw flat polygons. 
     The parts of triangles outside of the screen are simply not drawn; this code was added by me, 
     and is not described anywhere in fatmap.txt; therefore, it might be less correct. 

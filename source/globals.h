@@ -4,6 +4,8 @@
 
 #include "timer.h"
 
+// #define DEBUG_PRINT
+
 extern int g_mode;
 extern Timer g_timer;
 extern int g_frameCount;

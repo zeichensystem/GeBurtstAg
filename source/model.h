@@ -5,8 +5,8 @@
 #include "math.h"
 #include "raster_geometry.h"
 
-#define MAX_MODEL_VERTS 256
-#define MAX_MODEL_FACES 256
+#define MAX_MODEL_VERTS 512
+#define MAX_MODEL_FACES 512
 
 /*
     We want to use object pools to manage our modelInstances, just a thin abstraction on top of static arrays with no dynamic allocations etc. 
@@ -29,8 +29,8 @@ typedef struct Face {
 } Face;
 
 typedef struct Model {
-    Vec3 *verts;
-    Face *faces;
+    const Vec3 *verts;
+    const Face *faces;
     int numVerts, numFaces;
 } Model;
 
@@ -89,7 +89,7 @@ typedef struct ModelInstancePool {
 } ModelInstancePool;
 
 void modelInit(void);
-Model modelNew(Vec3 *verts, Face *faces, int numVerts, int numFaces);
+Model modelNew(const Vec3 *verts, const Face *faces, int numVerts, int numFaces);
 ModelInstancePool modelInstancePoolNew(ModelInstance *buffer, int bufferCapacity);
 void modelInstancePoolReset(ModelInstancePool *pool);
 int modelInstanceRemove(ModelInstancePool *pool, ModelInstance* instance);

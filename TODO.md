@@ -12,7 +12,6 @@
 - [ ] Use division LUTs for triangle-filling (integers) and for perspective divides (fixed point)
 - [ ] Broadphase with bounding spheres for model-instances (and option for models with fewer faces which get activated if their distance to the camera is large).
 - [ ] use sin_lut instead of fxSin for better accuracy maybe. 
-- [ ] Put models into ROM (const)   
 - [ ] Option for pre-sorted geometry (in case the camera moves only backward/forwards etc. it would be more efficient).
 - [ ] Option to calculate the actual centroid of a face for sorting
 - [ ] Better handling of lookAt singularity (looking completely down/up)
@@ -33,4 +32,5 @@
 - [x] Backface culling winding order/normal problem
 - [x] Key chording/sequences for scene switching
 - [x] Handle .obj colours (.mtl) on import
-- [x] Integration of 'apex audio system' for .mod support      
+- [x] Integration of 'apex audio system' for .mod support   
+- [x] Put models into ROM (const)   
