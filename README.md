@@ -52,9 +52,9 @@ We use instanced models, and organise them in object pools. Pretty unnecessary. 
 [There's a lot](TODO.md). It'd be probably better to just start from scratch and let this be. Learned a lot, though!
 
 ## License 
-All the code which is not owned/licensed under other terms is licensed with *The MIT License (MIT)* [1] (but you *must* respect the respective licenses/restrictions which apply to the work of other people such as credited in [Credits](CREDITS.md)). Alls assets (music, all 3d models except suzanne.obj and cpa.obj) are licensed under CC BY (Attribution 4.0 International (CC BY 4.0). [2]
+All the code which is not owned/licensed under other terms is licensed with *The MIT License (MIT)* [1] (but you *must* respect the respective licenses/restrictions which apply to the work of other people such as credited in [Credits](CREDITS.md)). Alls assets (music, all 3d models except suzanne.obj and cpa.obj) are licensed under CC BY (Attribution 4.0 International (CC BY 4.0)). [2]
 
-[1] 
+[1] <https://mit-license.org> (last retrieved: 2021-07-10)
 >The MIT License (MIT)
 >Copyright © 2021 <https://github.com/zeichensystem>
 >
@@ -64,10 +64,7 @@ All the code which is not owned/licensed under other terms is licensed with *The
 >
 >THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE >WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.A.
 
-cf. <https://mit-license.org> (last retrieved: 2021-07-10)
-
-[2] 
-<http://creativecommons.org/licenses/by/4.0/>
+[2] <http://creativecommons.org/licenses/by/4.0/> (last retrieved: 2021-07-10)
 
 ## Credits
 Based on [a big amount of work of other people.](CREDITS.md) Please respect the licenses of the respective code etc., even if the rest of this repository is licensed under aforementioned *The MIT License (MIT)*.   
