@@ -52,7 +52,7 @@ We use instanced models, and organise them in object pools. Pretty unnecessary. 
 [There's a lot](TODO.md). It'd be probably better to just start from scratch and let this be. Learned a lot, though!
 
 ## License 
-All the code which is not owned/licensed under other terms is licensed with *The MIT License (MIT)* [1] (but you *must* respect the respective licenses/restrictions which apply to the work of other people such as credited in [Credits](CREDITS.md)). Alls assets (music, all 3d models execept suzanne.obj and cpa.obj) are licensed under CC BY (Attribution 4.0 International (CC BY 4.0). [2]
+All the code which is not owned/licensed under other terms is licensed with *The MIT License (MIT)* [1] (but you *must* respect the respective licenses/restrictions which apply to the work of other people such as credited in [Credits](CREDITS.md)). Alls assets (music, all 3d models except suzanne.obj and cpa.obj) are licensed under CC BY (Attribution 4.0 International (CC BY 4.0). [2]
 
 [1] 
 >The MIT License (MIT)
@@ -66,7 +66,8 @@ All the code which is not owned/licensed under other terms is licensed with *The
 
 cf. <https://mit-license.org> (last retrieved: 2021-07-10)
 
-[2] <http://creativecommons.org/licenses/by/4.0/>
+[2] 
+<http://creativecommons.org/licenses/by/4.0/>
 
 ## Credits
 Based on [a big amount of work of other people.](CREDITS.md) Please respect the licenses of the respective code etc., even if the rest of this repository is licensed under aforementioned *The MIT License (MIT)*.   
