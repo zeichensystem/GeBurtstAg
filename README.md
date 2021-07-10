@@ -40,7 +40,7 @@ For debugging, it might be useful to ```#define USER_SCENE_SWITCH```in [source/s
 ### Asset import
 Put your .mod files into [assets/music](assets/music). Just invoking the top-level [Makefile](Makefile) with ```make```will take care of them (look at the examples). 
 
-Put your 3d models into [assets/models](assets/models). As above, just invoke ```make``` (it internally uses ```python3 tools/obj2model.py```to convert your .obj files. You can also use .mtl files (the names must match). So far, multiple objects in one .obj file are treated as one (sorry).
+Put your 3d models into [assets/models](assets/models). As above, just invoke ```make``` (it internally uses ```python3 tools/obj2model.py```to convert your .obj files). You can also use .mtl files (the names must match). So far, multiple objects in one .obj file are treated as one (sorry).
 
 I assume you use blender 2.8 in the following.
 Make sure to use the *Principled BSDF* (only its *Base Color* is considered) surface/material type in Blender, as the *Background* (and other) surface types won't be exported. Make sure to triangulate your faces, and make sure you decimate your models (up to 350 triangles might be workable I guess, but the lower, the better). Make sure the *backface-culling* checkbox is checked under the materials (if you want that).
