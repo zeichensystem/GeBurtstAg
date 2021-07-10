@@ -114,10 +114,10 @@ void moleculeSceneDraw(void)
         m5_puts(10, 10, "but now for real", CLR_WHITE);
     } else if (timer.time >= int2fx12(50) && timer.time < int2fx12(53)) {
         m5_puts(10, 10, "goodbye", CLR_WHITE);
-        AAS_MOD_Stop(AAS_DATA_MOD_BuxWV250);
     } else if (timer.time >= int2fx12(56) && timer.time < int2fx12(59)) {
         m5_puts(10, 10, "Go away!", CLR_WHITE);
         if (!musicSwitched) {
+            AAS_MOD_Stop(AAS_DATA_MOD_BuxWV250);
             AAS_MOD_Play(AAS_DATA_MOD_aaa);
             musicSwitched = true;
         }
