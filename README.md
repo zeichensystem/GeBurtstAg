@@ -1,9 +1,9 @@
 # GeBurtstAg
 A tiny [GBA Jam 2021](https://itch.io/jam/gbajam21) *just-for-fun* submission celebrating the 20th anniversary of the [GBA](https://en.wikipedia.org/wiki/Game_Boy_Advance) (*16.7 MHz*!) and other things. It's a small audio-visual demo/toy which uses broken and naive 3D software rendering. 
 
-![Rainbow 3D-Demo](doc-img/demo-0.gif)
-![Head 3D-Demo](doc-img/demo-1.gif)
-![Train 3D-Demo](doc-img/demo-2.gif)
+![Rainbow 3D-Demo](readme-assets/demo-0.gif)
+![Head 3D-Demo](readme-assets/demo-1.gif)
+![Train 3D-Demo](readme-assets/demo-2.gif)
 
 ## How to use
 ### Dependencies and installation
