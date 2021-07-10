@@ -67,7 +67,7 @@ void subwaySceneUpdate(void)
         camera.pos.y =  lerpSmooth(int2fx(0), int2fx(10), tZ);
     } else { // Camera inside
         FIXED_12 tInside = (fx12div(timer.time - camMoveDurationZ, int2fx12(8))); 
-        camera.lookAt = (Vec3){.x = int2fx(-10), .y=120, .z= lerpSmooth(int2fx(-2), int2fx(-16), tInside)};
+        camera.lookAt = (Vec3){.x = int2fx(-10), .y=int2fx(1), .z= lerpSmooth(int2fx(-2), int2fx(-16), tInside)};
         camera.pos = (Vec3){.x = 240, .y = int2fx(2), .z = int2fx(-5)};
 
         if (tInside > int2fx12(1)) {
@@ -76,9 +76,7 @@ void subwaySceneUpdate(void)
 
     }
 
-
-
-    const int treeSpeed = 138;
+    const int treeSpeed = 142;
     for (int i = 0; i < NUM_TREES; ++i) {
         if (trees[i]->state.pos.z < int2fx(-FAR)) { // Tree is out of sight -> "respawn".
             trees[i]->state.pos.z = int2fx(120);
