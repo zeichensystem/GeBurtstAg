@@ -74,7 +74,6 @@ void moleculeSceneDraw(void)
         m5_puts(10, 10, "math etc.", CLR_WHITE);
         m5_puts(10, 20, "wikipedia.org",  RGB15(10, 25, 31));
         m5_puts(10, 30, "sol.gfxile.net",  RGB15(10, 25, 31));
-
     } else if (timer.time >= int2fx12(12) && timer.time < int2fx12(14)) {
         m5_puts(10, 10, "samples", CLR_WHITE);
         m5_puts(10, 20, "ST-01",  RGB15(10, 25, 31));
@@ -96,11 +95,11 @@ void moleculeSceneDraw(void)
         m5_puts(10, 20, "Nick Sells",  RGB15(10, 25, 31));
         m5_puts(10, 30, "(adverseengineer)",  RGB15(10, 25, 31));
 
-    } else if (timer.time >= int2fx12(24) && timer.time < int2fx12(26)) {
+    } else if (timer.time >= int2fx12(24) && timer.time < int2fx12(27)) {
         m5_puts(10, 10, "for more", CLR_WHITE);
         m5_puts(10, 20, "CREDITS.md",  RGB15(10, 25, 31));
-        m5_puts(10, 20, "CREDITS.md",  RGB15(10, 25, 31));
-
+        m5_puts(10, 30, "github.com/",  RGB15(10, 25, 31));
+        m5_puts(10, 40, "zeichensystem/",  RGB15(10, 25, 31));
     } else if (timer.time >= int2fx12(28) && timer.time < int2fx12(30)) {
         m5_puts(24, 10, "happy birthday", CLR_WHITE);
     }  else if (timer.time >= int2fx12(32) && timer.time < int2fx12(34)) {
