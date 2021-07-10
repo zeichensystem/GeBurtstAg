@@ -4,6 +4,8 @@ A tiny [GBA Jam 2021](https://itch.io/jam/gbajam21) *just-for-fun* submission ce
 ![Rainbow 3D-Demo](readme-assets/demo-0.gif)
 ![Head 3D-Demo](readme-assets/demo-1.gif)
 ![Train 3D-Demo](readme-assets/demo-2.gif)
+![Molecule 3D-Demo](readme-assets/demo-3.gif)
+
 
 ## How to use
 ### Dependencies and installation
@@ -67,4 +69,4 @@ All the code which is not owned/licensed under other terms is licensed with *The
 [2] <http://creativecommons.org/licenses/by/4.0/> (last retrieved: 2021-07-10)
 
 ## Credits
-Based on [a big amount of work of other people.](CREDITS.md) Please respect the licenses of the respective code etc., even if the rest of this repository is licensed under aforementioned *The MIT License (MIT)*.   
+Based on [a big amount of work of other people.](CREDITS.md) Please respect the licenses of the respective code etc., even if the rest of this repository is licensed under aforementioned *MIT License (MIT)*.   
