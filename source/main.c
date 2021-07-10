@@ -33,9 +33,9 @@ int main(void)
     timerInit();
     modelInit();
     scenesInit();
-    logutilsInit(2);
+    logutilsInit(6);
 
-    AAS_MOD_Play(AAS_DATA_MOD_aaa);
+    AAS_MOD_Play(AAS_DATA_MOD_BuxWV250);
     
     while (1) {
         scenesDispatchUpdate();

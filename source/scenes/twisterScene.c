@@ -80,6 +80,10 @@ IWRAM_CODE_ARM void twisterSceneUpdate(void)
         twisters[i].x = radiusX * lu_cos(i * TAU / MAX_RENDER_TWISTERS + t);
         twisters[i].z = int2fx12(radiusZ * 2) + radiusZ * lu_sin(i * TAU  / MAX_RENDER_TWISTERS + t);
     }  
+
+    if (timer.time > int2fx12(4)) {
+        sceneSwitchTo(MOLECULESCENE);
+    }
 }
 
 
@@ -143,7 +147,7 @@ IWRAM_CODE_ARM static void renderTwisters(Twister **tw, int num)
                 x2 = center_x + fx12ToInt(fx12mul(fx12mul(tw[idx]->amp, sinval), tw[idx]->zInv));
                 
                 CLR_IDX clr;
-                if (timer.time < int2fx12(9)) { // Pink. 
+                if (timer.time < int2fx12(8)) { // Pink (always pink, looks better). 
                     if (x <= 2) {
                         clr = CLRIDX_PINKSHADE_START + x;
                     } else {

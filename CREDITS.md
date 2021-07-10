@@ -143,7 +143,9 @@ cf. <https://archive.org/details/AmigaSoundtrackerSamplePacksst-xx> (last retrie
 ### Credits Theme
 (In *assets/music/BuxWV250.mod*)
 
-The "credits theme" is based on melodies from the *Aria in G major "La capricciosa" (BuxWV250)* by Dieterich Buxtehude (1637/39 – 1707). 
+The "credits theme" is based on melodies from the *Aria in G major "La capricciosa" (BuxWV250)* by Dieterich Buxtehude (1637/39 – 1707). #
+
+(But now I actually use it as the main theme... If you're bored, look at aaa.mod (not completly tracked) and the sheet music, it was supposed to be the main theme. We don't even have a real credits screen as of now.)
 
 
 ## 3d Models

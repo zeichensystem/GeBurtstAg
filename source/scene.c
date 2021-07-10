@@ -37,27 +37,29 @@ void sceneKeySeqInit(void)
 
 #include "scenes/cubespaceScene.h"
 #include "scenes/testbedScene.h"
+#include "scenes/moleculeScene.h"
 #include "scenes/subwayScene.h"
 #include "scenes/benchmarkScene.h"
 #include "scenes/twisterScene.h"
 #include "scenes/gbaScene.h"
 
-#define SCENE_NUM 6
+#define SCENE_NUM 7
 static Scene scenes[SCENE_NUM];
 
 void scenesInit(void) 
 {
     scenes[0] = sceneNew("cubespaceScene", cubespaceSceneInit, cubespaceSceneStart, cubespaceScenePause, cubespaceSceneResume, cubespaceSceneUpdate, cubespaceSceneDraw);
     scenes[1] = sceneNew("testbedScene", testbedSceneInit, testbedSceneStart, testbedScenePause, testbedSceneResume, testbedSceneUpdate, testbedSceneDraw);
-    scenes[2] = sceneNew("subwayScene", subwaySceneInit, subwaySceneStart, subwayScenePause, subwaySceneResume, subwaySceneUpdate, subwaySceneDraw);
-    scenes[3] = sceneNew("benchmarkScene", benchmarkSceneInit, benchmarkSceneStart, benchmarkScenePause, benchmarkSceneResume, benchmarkSceneUpdate, benchmarkSceneDraw);
-    scenes[4] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
-    scenes[5] = sceneNew("gbaScene", gbaSceneInit, gbaSceneStart, gbaScenePause, gbaSceneResume, gbaSceneUpdate, gbaSceneDraw);
+    scenes[2] = sceneNew("moleculeScene", moleculeSceneInit, moleculeSceneStart, moleculeScenePause, moleculeSceneResume, moleculeSceneUpdate, moleculeSceneDraw);
+    scenes[3] = sceneNew("subwayScene", subwaySceneInit, subwaySceneStart, subwayScenePause, subwaySceneResume, subwaySceneUpdate, subwaySceneDraw);
+    scenes[4] = sceneNew("benchmarkScene", benchmarkSceneInit, benchmarkSceneStart, benchmarkScenePause, benchmarkSceneResume, benchmarkSceneUpdate, benchmarkSceneDraw);
+    scenes[5] = sceneNew("twisterScene", twisterSceneInit, twisterSceneStart, twisterScenePause, twisterSceneResume, twisterSceneUpdate, twisterSceneDraw);
+    scenes[6] = sceneNew("gbaScene", gbaSceneInit, gbaSceneStart, gbaScenePause, gbaSceneResume, gbaSceneUpdate, gbaSceneDraw);
 
     for (int i = 0; i < SCENE_NUM; ++i) {
         scenes[i].init();
     }
-    currentSceneID = 2; // The ID of the initial scene
+    currentSceneID = 3; // The ID of the initial scene
     sceneKeySeqInit();
 }
 

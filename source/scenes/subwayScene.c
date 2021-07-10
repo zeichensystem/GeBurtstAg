@@ -15,7 +15,7 @@
 static Timer timer;
 
 // NUM_TREES must be divisible by 2.
-#define NUM_TREES 18
+#define NUM_TREES 20
 #define MAX_MODELS (NUM_TREES + 1)
 EWRAM_DATA static ModelInstance __modelBuffer[MAX_MODELS];
 EWRAM_DATA static ModelInstance* trees[NUM_TREES];
@@ -26,7 +26,7 @@ static ModelInstance *subwayInstance;
 static Camera camera;
 static Vec3 lightDirection;
 
-static const int FAR = 142;
+static const int FAR = 202;
 
 void subwaySceneInit(void) 
 { 
@@ -42,11 +42,11 @@ void subwaySceneInit(void)
     subwayInstance = modelInstanceAddVanilla(&modelPool, subwayModel, &(Vec3){.x=0, .y=0, .z=0}, int2fx(2), SHADING_FLAT);
     subwayInstance->state.backfaceCulling = false;
 
-    const int treeSpacing = 24; // Z-spacing.
+    const int treeSpacing = 34; // Z-spacing.
     const int leftZOffset = 16; 
     for (int i = 0; i < NUM_TREES / 2; i+=2) {
-        trees[i] = modelInstanceAddVanilla(&modelPool, treeModel, &(Vec3){.x=int2fx(20), .y=0, .z= i * int2fx(treeSpacing)}, int2fx(1), SHADING_FLAT); // Right.
-        trees[i+1] = modelInstanceAddVanilla(&modelPool, treeModel, &(Vec3){.x=int2fx(-20), .y=0, .z= i * int2fx(treeSpacing - 4) + int2fx(leftZOffset)}, int2fx(1), SHADING_FLAT); // Left
+        trees[i] = modelInstanceAddVanilla(&modelPool, treeModel, &(Vec3){.x=int2fx(28), .y=0, .z= i * int2fx(treeSpacing)}, int2fx(1) + 200, SHADING_FLAT); // Right.
+        trees[i+1] = modelInstanceAddVanilla(&modelPool, treeModel, &(Vec3){.x=int2fx(-28), .y=0, .z= i * int2fx(treeSpacing - 4) + int2fx(leftZOffset)}, int2fx(1) + 200, SHADING_FLAT); // Left
         trees[i]->state.yaw = deg2fxangle(-56);
         trees[i+1]->state.yaw = deg2fxangle(-56);
     }
@@ -56,18 +56,18 @@ void subwaySceneUpdate(void)
 {
     timerTick(&timer);
     const FIXED_12 camMoveDuration = int2fx12(10);
-    const FIXED camMoveDurationZ = int2fx12(14);
+    const FIXED camMoveDurationZ = int2fx12(15);
     const FIXED_12 startTimeOffset = 1000;  
     FIXED_12 t =  (fx12div(timer.time + startTimeOffset , camMoveDuration));
     FIXED_12 tZ =  (fx12div(timer.time + startTimeOffset, camMoveDurationZ ));
 
-    if (tZ <= int2fx12(1)) { // Camera outside. 
+    if (tZ < int2fx12(1)) { // Camera outside. 
         camera.pos.z = lerpSmooth(int2fx(-35), int2fx(76), tZ);
         camera.pos.x =  lerpSmooth(int2fx(48), int2fx(16), t);
-        camera.pos.y =  lerpSmooth(int2fx(0), int2fx(8), tZ);
+        camera.pos.y =  lerpSmooth(int2fx(0), int2fx(10), tZ);
     } else { // Camera inside
         FIXED_12 tInside = (fx12div(timer.time - camMoveDurationZ, int2fx12(8))); 
-        camera.lookAt = (Vec3){.x = int2fx(-10), .y=int2fx(1), .z= lerpSmooth(int2fx(-2), int2fx(-16), tInside)};
+        camera.lookAt = (Vec3){.x = int2fx(-10), .y=120, .z= lerpSmooth(int2fx(-2), int2fx(-16), tInside)};
         camera.pos = (Vec3){.x = 240, .y = int2fx(2), .z = int2fx(-5)};
 
         if (tInside > int2fx12(1)) {
@@ -78,11 +78,10 @@ void subwaySceneUpdate(void)
 
 
 
-
-    const int treeSpeed = 128;
+    const int treeSpeed = 138;
     for (int i = 0; i < NUM_TREES; ++i) {
         if (trees[i]->state.pos.z < int2fx(-FAR)) { // Tree is out of sight -> "respawn".
-            trees[i]->state.pos.z = int2fx(80);
+            trees[i]->state.pos.z = int2fx(120);
         } else {
             trees[i]->state.pos.z -=  fx12Tofx(fx12mul(timer.deltatime, int2fx12(treeSpeed)));
         }
