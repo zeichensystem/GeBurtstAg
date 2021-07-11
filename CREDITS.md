@@ -78,6 +78,13 @@ My implementation is broken, please refer to the original.
 
 cf. <http://psx.arthus.net/sdk/Psy-Q/DOCS/TECHNOTE/ordtbl.pdf> (last retrieved 2021-07-09)
 
+
+### *lookAt* function (concept)
+(In *camera.c*)
+
+cf. https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/lookat-function (last retrieved 2021-07-11)
+
+
 ### *Object Pool* (concept)
 It's not really a good use of this pattern in this case...
 
@@ -88,7 +95,6 @@ cf. https://gameprogrammingpatterns.com/object-pool.html (last retrieved: 2021-0
 (In *source/render/clipping.c*)
 
 Licensed under the [Creative Commons Attribution-ShareAlike 3.0 Unported License](https://creativecommons.org/licenses/by-sa/3.0/).
-
 
 cf. <https://en.wikipedia.org/wiki/Cohen–Sutherland_algorithm> (last retrieved 2021-05-10)
 
