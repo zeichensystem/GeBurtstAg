@@ -1,0 +1,10 @@
+build
+lib/apex-audio-system/build
+
+*.gba
+*.sav
+*.elf
+*.o
+
+*.pnproj
+.DS_Store

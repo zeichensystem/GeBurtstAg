@@ -1,7 +1,7 @@
 # compiler tools prefix used by makefiles for gba executables
 # for example, to set to absolute devkitpro path, set to:
 # /opt/devkitpro/devkitARM/bin/arm-none-eabi-
-export CROSS =   /opt/devkitpro/devkitARM/bin/arm-none-eabi-
+export CROSS = /opt/devkitpro/devkitARM/bin/arm-none-eabi-
 
 # compiler tools prefix used by makefiles for conv2aas executable
 # for example, the empty prefix below will use the system gcc tools
